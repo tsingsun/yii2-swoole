@@ -1,0 +1,26 @@
+{
+    "name":"tsingsun/yii2-swoole",
+    "description":"yii2 swoole plugin",
+    "type":"yii2-extension",
+    "author":[
+        {
+            "name":"liqingshan",
+            "email":"qsli@1ping.com"
+        }
+    ],
+    "require":{
+        "php":">=7.0",
+        "ext-swoole":">=1.8",
+        "ext-runkit":">=1.0",
+        "yiisoft/yii2-dev":"dev-master",
+        "cebe/markdown": "~1.0.0 | ~1.1.0"
+    },
+    "require-dev":{
+    },
+    "autoload":{
+        "psr-4":{
+            "yii\\swoole\\":"src"
+        },
+        "files": ["src/functions_include.php"]
+    }
+}
