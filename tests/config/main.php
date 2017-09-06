@@ -13,6 +13,7 @@ $config = [
     'language'=>'en',
     'sourceLanguage'=>'zh-CN',
     'timeZone'=>'Asia/Shanghai',
+    'controllerNamespace' => 'swooleunit\controllers',
     'bootstrap' => [
         'log',
         'contentNegotiator'=>[
@@ -29,7 +30,6 @@ $config = [
         ],
     ],
     'vendorPath' => __DIR__.'/../../vendor',
-    'controllerNamespace'=>'swooleunit\controllers',
     'components' => [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
@@ -57,23 +57,10 @@ $config = [
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
-                    'exportInterval'=>2,
-                    'levels' => ['error'],
+                    'exportInterval'=> 1,
+//                    'levels' => ['error'],
                     'logFile' => '@runtime/logs/'.date('ymd').'.log',
                     'logVars'=>[],
-                ],
-                [
-                    'class' => 'yii\log\FileAccessTarget',
-                    'exportInterval'=>2,
-                    'levels' => ['access'],
-                    'logVars' => [],
-                    'logFile' => '@runtime/logs/access/' . date('ymd') . '.log',
-                    'config' => [
-                        't_gmt' => '',
-                        'at_cid' => '',
-                        'at_cvn' => '',
-                        'at_sid' => '',
-                    ]
                 ],
             ],
         ],

@@ -16,8 +16,8 @@ use yii\swoole\server\Server;
 
 /**
  * Usage: swoole/[actions] [options] [-c]=<file>
- *   swoole/start -c=@config/swoole.php project-name
- *   swoole/stop -c=@config/swoole.php project-name
+ *   swoole/start -c=@config/swoole.php
+ *   swoole/stop -c=@config/swoole.php
  *
  *   -c <file>      look config file path,it can use alias path,if null,will get yii params config
  * @package yii\swoole\Controllers
@@ -27,7 +27,7 @@ class SwooleController extends Controller
     /**
      * @var string swoole server config file path,can use yii alias Path
      */
-    public $configPath;
+    public $configPath = '@app/config/swoole.php';
 
     protected $config;
 
@@ -37,7 +37,7 @@ class SwooleController extends Controller
             if($this->configPath){
                 $path = Yii::getAlias($this->configPath);
                 if(file_exists($path)){
-                    $config = include $path;
+                    $config = require_once $path;
                     if(!is_array($config)){
                         throw new InvalidConfigException('config file format not correct');
                     }
@@ -70,34 +70,27 @@ class SwooleController extends Controller
     }
 
     /**
-     * help
-     */
-    public function actionIndex()
-    {
-    }
-
-    /**
      * start the server
      * @param string $siteName unique site name
      * @see https://wiki.swoole.com/wiki/page/19.html
      */
-    public function actionStart($siteName)
+    public function actionStart()
     {
-        return $this->runCommand($siteName,'start');
+        return $this->runCommand('start');
     }
 
-    public function actionStop($siteName)
+    public function actionStop()
     {
-        return $this->runCommand($siteName,'stop');
+        return $this->runCommand('stop');
     }
 
     /**
      * @param $siteName
      * @see https://wiki.swoole.com/wiki/page/20.html
      */
-    public function actionReload($siteName)
+    public function actionReload()
     {
-        return $this->runCommand($siteName,'reload');
+        return $this->runCommand('reload');
     }
 
     /**
@@ -105,10 +98,9 @@ class SwooleController extends Controller
      * @param $siteName
      * @param $command
      */
-    private function runCommand($siteName,$command)
+    private function runCommand($command)
     {
-        $cfg = $this->config[$siteName];
-        $cfg['id'] = $siteName;
+        $cfg = $this->config;
         $pidFile = Yii::getAlias($cfg['setting']['pid_file']);
         $masterPid     = file_exists($pidFile) ? file_get_contents($pidFile) : null;
         switch ($command){

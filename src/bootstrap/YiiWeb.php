@@ -8,8 +8,6 @@
 
 namespace yii\swoole\bootstrap;
 
-require_once __DIR__.'/../functions_include.php';
-
 use Yii;
 use yii\swoole\di\Container;
 use yii\swoole\log\Dispatcher;
@@ -18,6 +16,7 @@ use yii\swoole\server\Server;
 use yii\swoole\web\Application;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
+use yii\swoole\web\ErrorHandle;
 use yii\swoole\web\Response;
 use Swoole\Server as SwooleServer;
 
@@ -29,8 +28,6 @@ class YiiWeb implements BootstrapInterface
 {
     public $index = '/index.php';
 
-    public $webRoot;
-
     /**
      * @var Server
      */
@@ -40,40 +37,29 @@ class YiiWeb implements BootstrapInterface
      * @var callable
      */
     public $init;
-
     /**
-     * @var yii config;
-     */
-    public $config;
-
-    /**
-     * @var \yii\web\Application
+     * @var \yii\swoole\web\Application
      */
     public $app;
 
     public function __construct(Server $server)
     {
         $this->server = $server;
-        $this->webRoot = $this->server->root;
     }
 
     public function onWorkerStart(SwooleServer $server,$worker_id)
     {
         //使application运行时不会报错
         $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'] = $this->index;
-        $_SERVER['SCRIPT_FILENAME'] = $this->webRoot.$this->index;
+        $_SERVER['SCRIPT_FILENAME'] = $this->server->root.$this->index;
 
         $initFunc = $this->init;
         if($initFunc instanceof \Closure){
             $initFunc($this);
         }
-        Yii::$container = new Container();
-        $this->app = new Application($this->config);
-        Yii::setAlias('@webroot', $this->webRoot);
-        Yii::setAlias('@web', '/');
-
         $this->app->server = $this->server;
-
+        Yii::setAlias('@webroot', $this->server->root);
+        Yii::setAlias('@web', '/');
         $this->initComponent();
     }
 
@@ -100,7 +86,7 @@ class YiiWeb implements BootstrapInterface
             }
         }
 
-        $file = $this->webRoot . $this->index;
+        $file = $this->server->root . $this->index;
 
         $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['DOCUMENT_URI'] = $this->index;
         $_SERVER['SCRIPT_FILENAME'] = $file;
@@ -112,7 +98,10 @@ class YiiWeb implements BootstrapInterface
         }catch (\Exception $e){
             Yii::$app->getErrorHandler()->handleException($e);
         }catch (\Throwable $e){
-            Yii::$app->getErrorHandler()->handleFallbackExceptionMessage($e,$e->getPrevious());
+            $eh = Yii::$app->getErrorHandler();
+            if($eh instanceof ErrorHandle){
+                $eh->handleFallbackExceptionMessage($e,$e->getPrevious());
+            }
         }finally{
             try{
                 $this->onEndRequest();
@@ -162,9 +151,7 @@ class YiiWeb implements BootstrapInterface
     public function onWorkerStop(SwooleServer $server, $worker_id)
     {
         if(!$server->taskworker){
-            //TODO 由于日志都保存在work进程中,task进程的日志暂时不处理
-            Yii::$app->setIsShutdown(true);
-            Yii::getLogger()->flush(Logger::FLUSH_SHUTDOWN);
+            Yii::getLogger()->flush(true);
         }
     }
 
@@ -189,10 +176,6 @@ class YiiWeb implements BootstrapInterface
         if($this->app->has('mailer',true)){
             $this->app->getMailer();
         }
-        $dispatcher = Yii::getLogger()->dispatcher;
-        if($dispatcher instanceof Dispatcher){
-            $dispatcher->aopExport();
-        }
     }
 
     /**
@@ -203,7 +186,14 @@ class YiiWeb implements BootstrapInterface
         if(Yii::$app->has('session',true)){
             Yii::$app->getSession()->close();
         }
-        Yii::getLogger()->flush(true);
+        $logger = Yii::getLogger();
+        if($logger instanceof Logger && $logger->hasError){
+            //如果存在异常，则输出
+            $logger->flush(true);
+            $logger->hasError = false;
+        }else{
+            $logger->flush();
+        }
         Yii::$app = $this->app;
     }
 }

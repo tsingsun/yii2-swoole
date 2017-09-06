@@ -4,13 +4,8 @@ namespace swooleunit\controllers;
 
 use Yii;
 use yii\base\Exception;
-use yii\filters\AccessControl;
-use yii\log\access\AccessLog;
 use yii\log\Logger;
 use yii\web\Controller;
-use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
 use yii\web\Response;
 
 class SiteController extends Controller
@@ -46,5 +41,11 @@ class SiteController extends Controller
     public function actionError()
     {
         return $a;      
+    }
+
+    public function actionDb()
+    {
+        $val = Yii::$app->getDb()->createCommand('select * from new_table')->query();
+        return count($val);
     }
 }

@@ -19,23 +19,11 @@ return [
     'id' => 'test-console',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
-    'controllerNamespace' => 'console\controllers',
+    'controllerNamespace' => 'swooleunit\controllers',
     'controllerMap' => [
-        'migrate' => [
-            'class' => 'yii\console\controllers\MigrateController',
-            'migrationNamespaces' => [
-            ],
-            'db'=>[
-                'class' => 'yii\db\Connection',
-            ],
-            //'migrationPath' => null, // allows to disable not namespaced migration completely
-        ],
         'swoole'=>[
             'class'=> 'yii\swoole\controllers\SwooleController'
         ],
-    ],
-    'aliases'=>[
-        '@config'=>'@app/config',
     ],
     'components' => [
         'log' => [
@@ -43,16 +31,11 @@ return [
                 [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning','trace'],
+                    'logVars'=>[],
                 ],
             ],
         ],
         'db' => $db,
-        'eventloop'=>[
-            'class'=>'yii\swoole\eventloop\EventLoop',
-            'loop'=>[
-                'class'=>'yii\swoole\eventloop\LibEventLoop',
-            ],
-        ],
     ],
     'params' => $params,
 ];

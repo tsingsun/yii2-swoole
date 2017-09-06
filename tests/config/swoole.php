@@ -6,25 +6,16 @@
  * Time: 下午5:03
  */
 return [
-    'testHttp' => [
-        'class'=>'yii\swoole\server\HttpServer',
-        'setting' => [
-            'daemonize'=>0,
-//            'reactor_num'=>1,
-            'worker_num'=>1,
-            'task_worker_num'=>1,
-            'pid_file' => __DIR__ . '/../runtime/testHttp.pid',
-            'log_file' => __DIR__.'/../runtime/logs/swoole.log',
-            'debug_mode'=> 1,
-            'user'=>'tsingsun',
-            'group'=>'staff',
-        ],
-    ],
-    'testHttp1' => [
-        'class'=>'yii\swoole\server\HttpServer',
-        'setting' => [
-            'pid_file' => __DIR__ . '/testHttp1.pid',
-            'log_file' => __DIR__.'/../runtime/log/swoole.log'
-        ],
+    'class'=>'yii\swoole\server\HttpServer',
+    'setting' => [
+        'daemonize'=>0,
+//        'reactor_num'=>1,
+        'worker_num'=>1,
+        'task_worker_num'=>1,
+        'pid_file' => __DIR__ . '/../runtime/testHttp.pid',
+        'log_file' => __DIR__.'/../runtime/logs/swoole.log',
+        'debug_mode'=> 1,
+        'user'=>'tsingsun',
+        'group'=>'staff',
     ],
 ];

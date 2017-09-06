@@ -144,6 +144,9 @@ abstract class Server
      */
     public function onWorkerStart(Swoole\Server $server,$worker_id)
     {
+        if(function_exists('opcache_reset')){
+            opcache_reset();
+        }
         if($worker_id >= $server->setting['worker_num']) {
             $this->setProcessTitle($this->id,'task process');
         } else {
@@ -229,27 +232,20 @@ abstract class Server
     static function run($config,callable $func)
     {
         global $argv;
-        if(!isset($argv[0],$argv[1],$argv[2])){
-            print_r("invalid run params,see help,run like:php swoole.php http start|stop|reload".PHP_EOL);
+        if(!isset($argv[0],$argv[1])){
+            print_r("invalid run params,see help,run like:php http-server.php start|stop|reload".PHP_EOL);
             return;
         }
-        $nodeName = $argv[1];
-        $command = $argv[2];
-        if(!isset($config[$nodeName])){
-            print_r("invalid node name:$nodeName in config file".PHP_EOL);
-            return;
-        }
+        $command = $argv[1];
 
-        $cfg = $config[$nodeName];
-        $cfg['id'] = $nodeName;
-        $pidFile = $cfg['setting']['pid_file'];
+        $pidFile = $config['setting']['pid_file'];
         $masterPid     = file_exists($pidFile) ? file_get_contents($pidFile) : null;
         if ($command == 'start'){
             if ($masterPid > 0 and posix_kill($masterPid,0)) {
                 print_r('Server is already running. Please stop it first.'.PHP_EOL);
                 exit;
             }
-            $func($cfg);
+            $func($config);
         }elseif($command == 'stop'){
             if(!empty($masterPid)){
                 posix_kill($masterPid,SIGTERM);

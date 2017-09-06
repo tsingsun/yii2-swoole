@@ -16,22 +16,13 @@ defined('YII2_SWOOLE_PATH') or define('YII2_SWOOLE_PATH', dirname(__DIR__));
  */
 class Logger extends \yii\log\Logger
 {
-    const FLUSH_SHUTDOWN = 'shutdown';
-    /**
-     * 采用了缓存register_shutdown_function
-     */
-    public function init()
-    {
-        register_shutdown_function(function () {
-            // make regular flush before other shutdown functions, which allows session data collection and so on
-            $this->flush();
-            //通过特殊shutdown参数,指示log不受文件IO缓存影响
-            register_shutdown_function([$this, 'flush'], self::FLUSH_SHUTDOWN);
-        });
-    }
+    public $hasError;
 
     public function log($message, $level, $category = 'application')
     {
+        if($level == \yii\log\Logger::LEVEL_ERROR){
+            $this->hasError = true;
+        }
         $time = microtime(true);
         $traces = [];
         if ($this->traceLevel > 0) {

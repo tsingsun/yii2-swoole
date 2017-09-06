@@ -21,11 +21,6 @@ class Application extends \yii\web\Application
      */
     public $server;
 
-    /**
-     * @var bool 指示应用是否被关闭
-     */
-    private $isShutdown = false;
-
     private $bootstrapComponents = [];
 
     public function __construct(array $config = [])
@@ -38,16 +33,6 @@ class Application extends \yii\web\Application
      */
     public function __clone()
     {
-    }
-
-    public function setIsShutdown($value)
-    {
-        $this->isShutdown = $value;
-    }
-
-    public function getIsShutdown()
-    {
-        return $this->isShutdown;
     }
 
     public function run()

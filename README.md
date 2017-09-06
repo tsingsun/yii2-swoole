@@ -13,6 +13,8 @@ yii2 swoole是基于swoole扩展,使yii项目运行在swoole上的一个方案,�
 
 ##安装方法
 
+最近的更新移除了runkit,但做为热更新的一种方案，先保留对runkit的说明。
+
 * Pear环境,项目依赖swoole与runkit扩展,通过pear包管理工具可以方便的进行安装
 
         wget http://pear.php.net/go-pear.phar
@@ -43,6 +45,7 @@ AOP进swoole的处理方式,也会造成运行中的问题.
 
 
 ##受限
+
 * swoole的reload机制
 在swoole的reload操作只能载入Worker进程启动后加载的PHP文件,PHPer习惯的热部署变得有一些限制.
 如果采用的是Yii的cli方式进行启动,那在启动前Yii Console相关的库文件将被加载,如果Yii涉及的库更新的话,将不得不将进程kill后再启动,
@@ -68,12 +71,14 @@ AOP进swoole的处理方式,也会造成运行中的问题.
 * Component组件的clone方法不复制event与behavior,因此目前只在Application和Response重写了该方法,其他组件暂时不需要
 
 ##执行流程
+
 1.  服务端代码不依赖YII,这样保证在swoole启动动,进程中的PHP文件不包含有Yii内容.
 2.  在worker进程中创建Application对象,Application对象由各服务器决定采用哪种.
 3.  Server接收请求时,复制worker中的Application对象及其组件.
 4.  执行Yii run
 
 ##改写的组件
+
 为了适应swoole的内存处理机制,不得不对Yii组件的进行改写,改写的原则是最小化,比如异常处理,可以改写ErrorHandle进行处理,但发现改写Response
 也可以达到目标,就只保留必须改写的Response.
 * yii\di\Container yii的核心组件容器,重写以针对类读取控制,后期扩展热部署支持
@@ -81,31 +86,23 @@ AOP进swoole的处理方式,也会造成运行中的问题.
 * yii\web\Response 替换该组件以使用swoole的输出,可以启用以支持大文件
 * yii\web\ErrorHandle 代码中包含了exit语法,因此需要重写.
 * yii\web\Session 取消初步化注册php关闭,session需要显示在配置文件中声明,才可识别.
-* yii\log\Dispatcher 通过runkit重写了target各实现类的export,针对文件IO型的Target做缓存处理,在请求退出后,先缓存再控制输出.
-* yii\log\Logger 日志做task任务处理,Exception不能被序列化,需要重写log的实现,在日志配置需要注意exportInterval,根据服务器环境设置
+* yii\log\Logger Exception不能被序列化,需要重写log的实现,在日志配置需要注意exportInterval,根据服务器环境设置
+
 ##使用方法
-1.  将swoole配置文件放在配置文件夹中,采用的是多服务配置
+
+1.  将swoole配置文件放在配置文件夹中
 ```php
 return [
-    'testHttp' => [
-        'class'=>'yii\swoole\server\HttpServer',
-        'setting' => [
-//            'daemonize'=>1,
-            'reactor_num'=>1,
-            'worker_num'=>1,
-            'pid_file' => __DIR__ . '/testHttp.pid',
-            'log_file' => __DIR__.'/../runtime/logs/swoole.log',
-            'debug_mode'=> 1,
-            'user'=>'tsingsun',
-            'group'=>'staff',
-        ],
-    ],
-    'testHttp1' => [
-        'class'=>'yii\swoole\server\HttpServer',
-        'setting' => [
-            'pid_file' => __DIR__ . '/testHttp1.pid',
-            'log_file' => __DIR__.'/../runtime/log/swoole.log'
-        ],
+    'class'=>'yii\swoole\server\HttpServer',
+    'setting' => [
+    //            'daemonize'=>1,
+        'reactor_num'=>1,
+        'worker_num'=>1,
+        'pid_file' => __DIR__ . '/testHttp.pid',
+        'log_file' => __DIR__.'/../runtime/logs/swoole.log',
+        'debug_mode'=> 1,
+        'user'=>'tsingsun',
+        group'=>'staff',
     ],
 ];
 ```
@@ -127,7 +124,9 @@ $config = require(__DIR__ . '/../config/swoole.php');
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
-        $bootstrap->config = $config;
+        //可以自定义实现
+        Yii::$container = new \yii\swoole\di\Container();
+        $bootstrap->app = new \yii\swoole\web\Application($config);
         Yii::setAlias('@swooleunit', __DIR__ . '/../');
     };
     $server->bootstrap = $starter;
@@ -136,15 +135,15 @@ $config = require(__DIR__ . '/../config/swoole.php');
 ```
 3.  cli控制命令 
 
-Usage: php [startScript] [configNode] [command]
+Usage: php [startScript] [command]
 
 ```php
 //启动
-php http_server.php testHttp start
+php http_server.php start
 //重启 
-php http_server.php testHttp reload
+php http_server.php reload
 //关闭
-php http_server.php testHttp stop
+php http_server.php stop
 ```
 4.  运行方式
 
@@ -159,7 +158,5 @@ php http_server.php testHttp stop
 
 * 仍然可用基于集成环境如XAMPP等进行调试
 * 基于swoole,只需要配置PHP环境,可用XDEBUG,如果是PHPSTORM,在Debug配置swoole运行脚本,点下Debug运行即可.
+* 在OnWorkStart断点时，请求会被阻塞
 * 启用task时,如果断点于task中,则调试请求会被阻塞
-
-##组件
-[promise](./doc/promise.md)

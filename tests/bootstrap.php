@@ -16,4 +16,3 @@ Yii::setAlias('@yii/swoole', __DIR__ . '/../src/');
 //Yii::setAlias('@app', __DIR__ . '/../');
 Yii::setAlias('@swooleunit', __DIR__ . '/');
 require_once(__DIR__ . '/TestCase.php');
-require_once(__DIR__ . '/../src/functions_include.php');
