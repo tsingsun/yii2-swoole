@@ -11,7 +11,7 @@ yii2 swoole是基于swoole扩展,使yii项目运行在swoole上的一个方案,�
 
 在编写本项目时,同时参考了swoole-yii2这个项目,给了我集成swoole的好思路,感谢!
 
-##安装方法
+## 安装方法
 
 最近的更新移除了runkit,但做为热更新的一种方案，先保留对runkit的说明。
 
@@ -44,7 +44,7 @@ AOP进swoole的处理方式,也会造成运行中的问题.
     runkit: 获取的[runkit](https://github.com/runkit7/runkit7)根目录中的runkit-api.php文件
 
 
-##受限
+## 受限
 
 * swoole的reload机制
 在swoole的reload操作只能载入Worker进程启动后加载的PHP文件,PHPer习惯的热部署变得有一些限制.
@@ -70,14 +70,14 @@ AOP进swoole的处理方式,也会造成运行中的问题.
 * 代码控制:sleep/exit/die是需要严格控制的语法,也导致了ErrorHandle需要重写.
 * Component组件的clone方法不复制event与behavior,因此目前只在Application和Response重写了该方法,其他组件暂时不需要
 
-##执行流程
+## 执行流程
 
 1.  服务端代码不依赖YII,这样保证在swoole启动动,进程中的PHP文件不包含有Yii内容.
 2.  在worker进程中创建Application对象,Application对象由各服务器决定采用哪种.
 3.  Server接收请求时,复制worker中的Application对象及其组件.
 4.  执行Yii run
 
-##改写的组件
+## 改写的组件
 
 为了适应swoole的内存处理机制,不得不对Yii组件的进行改写,改写的原则是最小化,比如异常处理,可以改写ErrorHandle进行处理,但发现改写Response
 也可以达到目标,就只保留必须改写的Response.
@@ -88,7 +88,7 @@ AOP进swoole的处理方式,也会造成运行中的问题.
 * yii\web\Session 取消初步化注册php关闭,session需要显示在配置文件中声明,才可识别.
 * yii\log\Logger Exception不能被序列化,需要重写log的实现,在日志配置需要注意exportInterval,根据服务器环境设置
 
-##使用方法
+## 使用方法
 
 1.  将swoole配置文件放在配置文件夹中
 ```php
