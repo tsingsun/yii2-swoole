@@ -33,23 +33,23 @@ class SwooleController extends Controller
 
     public function beforeAction($action)
     {
-        if(parent::beforeAction($action)){
-            if($this->configPath){
+        if (parent::beforeAction($action)) {
+            if ($this->configPath) {
                 $path = Yii::getAlias($this->configPath);
-                if(file_exists($path)){
+                if (file_exists($path)) {
                     $config = require_once $path;
-                    if(!is_array($config)){
+                    if (!is_array($config)) {
                         throw new InvalidConfigException('config file format not correct');
                     }
                     $this->config = $config;
-                }else{
+                } else {
                     throw new InvalidConfigException('config file not exists');
                 }
-            }else{
+            } else {
                 $this->config = Yii::$app->params['swoole'];
             }
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -58,15 +58,15 @@ class SwooleController extends Controller
     public function options($actionID)
     {
         $options = ['configPath'];
-        return array_merge($options,parent::options($actionID));
+        return array_merge($options, parent::options($actionID));
     }
 
     public function optionAliases()
     {
         $alias = [
-            'c'=>'configPath',
+            'c' => 'configPath',
         ];
-        return array_merge($alias,parent::optionAliases());
+        return array_merge($alias, parent::optionAliases());
     }
 
     /**
@@ -102,15 +102,15 @@ class SwooleController extends Controller
     {
         $cfg = $this->config;
         $pidFile = Yii::getAlias($cfg['setting']['pid_file']);
-        $masterPid     = file_exists($pidFile) ? file_get_contents($pidFile) : null;
-        switch ($command){
+        $masterPid = file_exists($pidFile) ? file_get_contents($pidFile) : null;
+        switch ($command) {
             case 'start':
                 print_r('please start swoole server through cli command: php start-script node start');
                 break;
             case 'stop':
-                if(!empty($masterPid)){
-                    posix_kill($masterPid,SIGTERM);
-                }else{
+                if (!empty($masterPid)) {
+                    posix_kill($masterPid, SIGTERM);
+                } else {
                     print_r('master pid is null, maybe you delete the pid file we created. you can manually kill the master process with signal SIGTERM.');
                 }
                 break;

@@ -11,6 +11,10 @@ namespace yii\swoole\log;
 
 use yii\base\InvalidConfigException;
 
+/**
+ * 使用异步的方式来实现日志写入操作
+ * @package yii\swoole\log
+ */
 class FileTarget extends \yii\log\FileTarget
 {
     public function export()
@@ -28,14 +32,14 @@ class FileTarget extends \yii\log\FileTarget
             }
             @flock($fp, LOCK_EX);
             $this->rotateFiles();
+            if ($this->fileMode !== null) {
+                @chmod($this->logFile, $this->fileMode);
+            }
             @flock($fp, LOCK_UN);
             @fclose($fp);
             @file_put_contents($this->logFile, $text, FILE_APPEND | LOCK_EX);
         } else {
             @swoole_async_writefile($this->logFile,$text,null,FILE_APPEND);
-        }
-        if ($this->fileMode !== null) {
-            @chmod($this->logFile, $this->fileMode);
         }
     }
 }

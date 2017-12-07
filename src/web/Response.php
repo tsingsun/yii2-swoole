@@ -27,10 +27,12 @@ class Response extends \yii\web\Response
     {
         return $this->swooleResponse;
     }
-
+    /**
+     * @inheritdoc
+     */
     protected function sendHeaders()
     {
-        if(!$this->swooleResponse){
+        if (!$this->swooleResponse) {
             parent::sendHeaders();
             return;
         }
@@ -38,7 +40,7 @@ class Response extends \yii\web\Response
             return;
         }
         $headers = $this->getHeaders();
-        if ($headers->count>0) {
+        if ($headers->count > 0) {
             foreach ($headers as $name => $values) {
                 $name = str_replace(' ', '-', ucwords(str_replace('-', ' ', $name)));
                 foreach ($values as $value) {
@@ -50,9 +52,12 @@ class Response extends \yii\web\Response
         $this->sendCookies();
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function sendCookies()
     {
-        if(!$this->swooleResponse){
+        if (!$this->swooleResponse) {
             return parent::sendCookies();
         }
 
@@ -68,7 +73,7 @@ class Response extends \yii\web\Response
         }
         foreach ($this->getCookies() as $cookie) {
             $value = $cookie->value;
-            if ($cookie->expire != 1  && isset($validationKey)) {
+            if ($cookie->expire != 1 && isset($validationKey)) {
                 $value = Yii::$app->getSecurity()->hashData(serialize([$cookie->name, $value]), $validationKey);
             }
             $this->swooleResponse->cookie($cookie->name, $value, $cookie->expire, $cookie->path, $cookie->domain, $cookie->secure, $cookie->httpOnly);
@@ -76,15 +81,18 @@ class Response extends \yii\web\Response
 
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function sendContent()
     {
-        if(!$this->swooleResponse){
+        if (!$this->swooleResponse) {
             return parent::sendContent();
         }
         if ($this->stream === null) {
-            if($this->content){
+            if ($this->content) {
                 $this->swooleResponse->end($this->content);
-            }else{
+            } else {
                 $this->swooleResponse->end();
             }
             return;
@@ -115,7 +123,7 @@ class Response extends \yii\web\Response
     }
 
     /**
-     * 默认的component组伯复制时,不对event,behavior进行复制.需要取消该限制
+     * 默认的component组件复制时,不对event,behavior进行复制.需要取消该限制
      */
     public function __clone()
     {

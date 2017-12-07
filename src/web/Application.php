@@ -6,22 +6,30 @@ use Yii;
 use yii\base\BootstrapInterface;
 use yii\base\InvalidConfigException;
 use yii\base\ExitException;
+use yii\base\InvalidRouteException;
+use yii\helpers\Url;
+use yii\swoole\coroutine\Task;
 use yii\swoole\server\Server;
+use yii\web\NotFoundHttpException;
+use yii\web\UrlNormalizerRedirectException;
 
 /**
- * Created by PhpStorm.
- * User: tsingsun
- * Date: 2017/2/28
- * Time: 下午10:34
+ * 使用该类来替换Yii2的Web Application
  */
 class Application extends \yii\web\Application
 {
+    const EVENT_AFTER_RUN = 'after_run';
     /**
      * @var Server
      */
     public $server;
 
     private $bootstrapComponents = [];
+
+    /**
+     * @var Task 调度任务
+     */
+    public $task;
 
     public function __construct(array $config = [])
     {
@@ -35,6 +43,10 @@ class Application extends \yii\web\Application
     {
     }
 
+    /**
+     * @return \Generator
+     * @throws \Exception
+     */
     public function run()
     {
         try {
@@ -45,42 +57,69 @@ class Application extends \yii\web\Application
             $this->trigger(self::EVENT_BEFORE_REQUEST);
 
             $this->state = self::STATE_HANDLING_REQUEST;
-            $response = $this->handleRequest($this->getRequest());
+            $response = (yield $this->handleRequest($this->getRequest()));
 
             $this->state = self::STATE_AFTER_REQUEST;
             $this->trigger(self::EVENT_AFTER_REQUEST);
 
             $this->state = self::STATE_SENDING_RESPONSE;
 
-            if(! ($response instanceof \yii\swoole\web\Response)){
-                ob_start();
-                ob_implicit_flush(false);
-            }
-            $response->send();
-
-            if($response instanceof \yii\swoole\web\Response){
-
-            }else{
-                $data = ob_get_clean();
-                $response->getSwooleResponse()->end($data);
-            }
+            yield $response->send();
 
             $this->state = self::STATE_END;
 
-            return $response->exitStatus;
+            yield $response->exitStatus;
 
         } catch (ExitException $e) {
             $this->end($e->statusCode, isset($response) ? $response : null);
-            return $e->statusCode;
-        }catch (\Exception $exception){
-            throw $exception;
-            Yii::$app->getErrorHandler()->handleException($exception);
-            return 0;
-//            return $this->end(0, isset($response) ? $response : null);
-        }catch (\Throwable $errorException){
-            Yii::$app->getErrorHandler()->handleError($errorException->getCode(),$errorException->getMessage(),$errorException->getFile(),$errorException->getLine());
-            return 0;
-//            return $this->end(0, isset($response) ? $response : null);
+            yield $e->statusCode;
+        } finally {
+            $this->trigger(self::EVENT_AFTER_RUN);
+        }
+    }
+
+    /**
+     * @param \yii\web\Request $request
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     */
+    public function handleRequest($request)
+    {
+        if (empty($this->catchAll)) {
+            try {
+                list ($route, $params) = $request->resolve();
+            } catch (UrlNormalizerRedirectException $e) {
+                $url = $e->url;
+                if (is_array($url)) {
+                    if (isset($url[0])) {
+                        // ensure the route is absolute
+                        $url[0] = '/' . ltrim($url[0], '/');
+                    }
+                    $url += $request->getQueryParams();
+                }
+                yield $this->getResponse()->redirect(Url::to($url, $e->scheme), $e->statusCode);
+            }
+        } else {
+            $route = $this->catchAll[0];
+            $params = $this->catchAll;
+            unset($params[0]);
+        }
+        try {
+            Yii::trace("Route requested: '$route'", __METHOD__);
+            $this->requestedRoute = $route;
+            $result = (yield $this->runAction($route, $params));
+            if ($result instanceof Response) {
+                yield $result;
+            } else {
+                $response = $this->getResponse();
+                if ($result !== null) {
+                    $response->data = $result;
+                }
+
+                yield $response;
+            }
+        } catch (InvalidRouteException $e) {
+            throw new NotFoundHttpException(Yii::t('yii', 'Page not found.'), $e->getCode(), $e);
         }
     }
 
@@ -141,19 +180,14 @@ class Application extends \yii\web\Application
         }
     }
 
-    protected function runComponentBootstrap(){
+    protected function runComponentBootstrap()
+    {
         foreach ($this->bootstrapComponents as $component) {
             if ($component instanceof BootstrapInterface) {
                 Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
                 $component->bootstrap($this);
             }
         }
-    }
-
-    public function createControllerByID($id)
-    {
-        $controller = parent::createControllerByID($id);
-        return $controller;
     }
 
     public function end($status = 0, $response = null)
@@ -165,7 +199,7 @@ class Application extends \yii\web\Application
 
         if ($this->state !== self::STATE_SENDING_RESPONSE && $this->state !== self::STATE_END) {
             $this->state = self::STATE_END;
-            $response = $response ? : $this->getResponse();
+            $response = $response ?: $this->getResponse();
             $response->send();
         }
 

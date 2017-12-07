@@ -124,10 +124,12 @@ $config = require(__DIR__ . '/../config/swoole.php');
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
+        //需要在此先设置资源有关的别名
+        Yii::setAlias('@webroot', WEBROOT);
+        Yii::setAlias('@web', '/');
         //可以自定义实现
         Yii::$container = new \yii\swoole\di\Container();
-        $bootstrap->app = new \yii\swoole\web\Application($config);
-        Yii::setAlias('@swooleunit', __DIR__ . '/../');
+        $bootstrap->app = new \yii\swoole\web\Application($config);        
     };
     $server->bootstrap = $starter;
     $server->start();

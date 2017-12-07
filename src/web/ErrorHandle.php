@@ -63,29 +63,21 @@ class ErrorHandle extends ErrorHandler
      * @param \Exception $previousException Main exception processed in [[handleException()]].
      * @since 2.0.11
      */
-    public function handleFallbackExceptionMessage($exception, $previousException) {
+    public function handleFallbackExceptionMessage($exception, $previousException)
+    {
         $msg = "An Error occurred while handling another error:\n";
-        $msg .= (string) $exception;
+        $msg .= "worker:#" . ($_SERVER['workerId'] ?? '');
+        $msg .= (string)$exception;
         $msg .= "\nPrevious exception:\n";
-        $msg .= (string) $previousException;
-        $endResponse = Yii::$app->getResponse();
+        $msg .= (string)$previousException;
         if (YII_DEBUG) {
             if (PHP_SAPI === 'cli') {
-                if($endResponse instanceof Response && !$endResponse->isSent){
-                    $endResponse->getSwooleResponse()->end($msg);
-                }else{
-                    echo $msg . "\n";
-                }
+                echo $msg . "\n";
             } else {
                 echo '<pre>' . htmlspecialchars($msg, ENT_QUOTES, Yii::$app->charset) . '</pre>';
             }
         } else {
             $msg = 'An internal server error occurred.';
-            if($endResponse instanceof Response){
-                $endResponse->getSwooleResponse()->end($msg);
-            }else{
-                echo $msg;
-            }
         }
         $msg .= "\n\$_SERVER = " . print_r($_SERVER, true);
         error_log($msg);

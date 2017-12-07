@@ -10,6 +10,10 @@ namespace yii\swoole\di;
 
 use Yii;
 
+/**
+ * 使用该类，替换了部分类的实现，方便YII项目的迁移
+ * @package yii\swoole\di
+ */
 class Container extends \yii\di\Container
 {
 

@@ -16,13 +16,8 @@ defined('YII2_SWOOLE_PATH') or define('YII2_SWOOLE_PATH', dirname(__DIR__));
  */
 class Logger extends \yii\log\Logger
 {
-    public $hasError;
-
     public function log($message, $level, $category = 'application')
     {
-        if($level == \yii\log\Logger::LEVEL_ERROR){
-            $this->hasError = true;
-        }
         $time = microtime(true);
         $traces = [];
         if ($this->traceLevel > 0) {

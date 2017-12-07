@@ -34,7 +34,10 @@ abstract class Server
     public $host = '0.0.0.0';
 
     public $port = 9501;
-
+    /**
+     * @var int 请求超时设置,以毫秒为单位
+     */
+    public $timeout = 30 * 1000;
     /**
      * @var \yii\swoole\bootstrap\BootstrapInterface
      */
@@ -52,7 +55,7 @@ abstract class Server
      */
     public $sockType;
     /**
-     * @var array server setting
+     * @var array swoole setting
      * @see https://wiki.swoole.com/wiki/page/274.html
      */
     public $setting = [];
@@ -62,16 +65,15 @@ abstract class Server
         $this->parseConfig($config);
         $this->init();
     }
-
     /**
-     *
+     * 服务初始化
      */
     public function init()
     {
         switch ($this->serverType){
             case 'http':
                 $this->swoole = new Swoole\Http\Server($this->host,$this->port);
-                $events = ['Request'];
+                $events = ['Request','WorkerError'];
                 break;
             case 'socket':
                 $this->swoole = new Swoole\WebSocket\Server($this->host,$this->port);

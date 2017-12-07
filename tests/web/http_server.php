@@ -23,9 +23,9 @@ $config = require(__DIR__ . '/../config/swoole.php');
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
+        Yii::setAlias('@swooleunit', __DIR__ . '/../');
         Yii::$container = new \yii\swoole\di\Container();
         $bootstrap->app = new \yii\swoole\web\Application($config);
-        Yii::setAlias('@swooleunit', __DIR__ . '/../');
     };
     $server->bootstrap = $starter;
     $server->start();

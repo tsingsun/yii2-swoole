@@ -5,6 +5,7 @@ namespace swooleunit\controllers;
 use Yii;
 use yii\base\Exception;
 use yii\log\Logger;
+use yii\swoole\helper\TaskHelper;
 use yii\web\Controller;
 use yii\web\Response;
 
@@ -47,5 +48,15 @@ class SiteController extends Controller
     {
         $val = Yii::$app->getDb()->createCommand('select * from new_table')->query();
         return count($val);
+    }
+
+    public function actionEcho()
+    {
+        echo 'hello world';
+    }
+
+    public function actionTimeout()
+    {
+        yield TaskHelper::taskSleep(40000);
     }
 }
