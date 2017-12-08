@@ -1,6 +1,6 @@
 <?php
 
-namespace yii\swoole\web;
+namespace tsingsun\daemon\web;
 
 use Yii;
 use yii\base\BootstrapInterface;
@@ -8,8 +8,7 @@ use yii\base\InvalidConfigException;
 use yii\base\ExitException;
 use yii\base\InvalidRouteException;
 use yii\helpers\Url;
-use yii\swoole\coroutine\Task;
-use yii\swoole\server\Server;
+use tsingsun\daemon\coroutine\Task;
 use yii\web\NotFoundHttpException;
 use yii\web\UrlNormalizerRedirectException;
 
@@ -19,10 +18,6 @@ use yii\web\UrlNormalizerRedirectException;
 class Application extends \yii\web\Application
 {
     const EVENT_AFTER_RUN = 'after_run';
-    /**
-     * @var Server
-     */
-    public $server;
 
     private $bootstrapComponents = [];
 
@@ -37,7 +32,7 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * 默认的component组伯复制时,不对event,behavior进行复制.需要取消该限制
+     * 默认的component组件复制时,不对event,behavior进行复制.需要取消该限制
      */
     public function __clone()
     {
@@ -57,69 +52,24 @@ class Application extends \yii\web\Application
             $this->trigger(self::EVENT_BEFORE_REQUEST);
 
             $this->state = self::STATE_HANDLING_REQUEST;
-            $response = (yield $this->handleRequest($this->getRequest()));
+            $response = $this->handleRequest($this->getRequest());
 
             $this->state = self::STATE_AFTER_REQUEST;
             $this->trigger(self::EVENT_AFTER_REQUEST);
 
             $this->state = self::STATE_SENDING_RESPONSE;
 
-            yield $response->send();
+            $response->send();
 
             $this->state = self::STATE_END;
 
-            yield $response->exitStatus;
+            return $response->exitStatus;
 
         } catch (ExitException $e) {
             $this->end($e->statusCode, isset($response) ? $response : null);
-            yield $e->statusCode;
+            return $e->statusCode;
         } finally {
             $this->trigger(self::EVENT_AFTER_RUN);
-        }
-    }
-
-    /**
-     * @param \yii\web\Request $request
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException
-     */
-    public function handleRequest($request)
-    {
-        if (empty($this->catchAll)) {
-            try {
-                list ($route, $params) = $request->resolve();
-            } catch (UrlNormalizerRedirectException $e) {
-                $url = $e->url;
-                if (is_array($url)) {
-                    if (isset($url[0])) {
-                        // ensure the route is absolute
-                        $url[0] = '/' . ltrim($url[0], '/');
-                    }
-                    $url += $request->getQueryParams();
-                }
-                yield $this->getResponse()->redirect(Url::to($url, $e->scheme), $e->statusCode);
-            }
-        } else {
-            $route = $this->catchAll[0];
-            $params = $this->catchAll;
-            unset($params[0]);
-        }
-        try {
-            Yii::trace("Route requested: '$route'", __METHOD__);
-            $this->requestedRoute = $route;
-            $result = (yield $this->runAction($route, $params));
-            if ($result instanceof Response) {
-                yield $result;
-            } else {
-                $response = $this->getResponse();
-                if ($result !== null) {
-                    $response->data = $result;
-                }
-
-                yield $response;
-            }
-        } catch (InvalidRouteException $e) {
-            throw new NotFoundHttpException(Yii::t('yii', 'Page not found.'), $e->getCode(), $e);
         }
     }
 

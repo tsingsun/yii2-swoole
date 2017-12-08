@@ -1,11 +1,11 @@
 <?php
 
-namespace swooleunit\controllers;
+namespace yiiunit\extension\daemon\controllers;
 
 use Yii;
 use yii\base\Exception;
 use yii\log\Logger;
-use yii\swoole\helper\TaskHelper;
+use tsingsun\daemon\helper\TaskHelper;
 use yii\web\Controller;
 use yii\web\Response;
 

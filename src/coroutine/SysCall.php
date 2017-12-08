@@ -6,12 +6,12 @@
  * Time: 下午5:01
  */
 
-namespace yii\swoole\coroutine;
+namespace tsingsun\daemon\coroutine;
 
 /**
  * 系统调用类一般作为yield后面跟着的值吐给外层的调用方来执行，并且可能返回响应的信号量，标识这个Task是继续运行还是进入等待状态中。
  *
- * @package yii\swoole\coroutine
+ * @package tsingsun\daemon\coroutine
  */
 class SysCall
 {

@@ -6,12 +6,12 @@
  * Time: 下午4:11
  */
 
-namespace yii\swoole\helper;
+namespace tsingsun\daemon\helper;
 
-use yii\swoole\coroutine\Signal;
-use yii\swoole\coroutine\SysCall;
-use yii\swoole\coroutine\Task;
-use yii\swoole\server\Timer;
+use tsingsun\daemon\coroutine\Signal;
+use tsingsun\daemon\coroutine\SysCall;
+use tsingsun\daemon\coroutine\Task;
+use tsingsun\daemon\server\Timer;
 
 class TaskHelper
 {

@@ -12,7 +12,7 @@ if (is_dir(__DIR__ . '/../vendor/')) {
 }
 require_once($vendorRoot . '/autoload.php');
 require_once($vendorRoot . '/yiisoft/yii2/Yii.php');
-Yii::setAlias('@yii/swoole', __DIR__ . '/../src/');
+Yii::setAlias('@yii/daemon', __DIR__ . '/../src/');
 //Yii::setAlias('@app', __DIR__ . '/../');
-Yii::setAlias('@swooleunit', __DIR__ . '/');
+Yii::setAlias('@yiiunit\extension\daemon', __DIR__ . '/');
 require_once(__DIR__ . '/TestCase.php');

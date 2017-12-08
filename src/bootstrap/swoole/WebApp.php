@@ -6,25 +6,25 @@
  * Time: 上午10:41
  */
 
-namespace yii\swoole\bootstrap;
+namespace tsingsun\daemon\bootstrap\swoole;
 
 use Yii;
-use yii\swoole\coroutine\Task;
-use yii\swoole\log\Logger;
-use yii\swoole\server\Server;
+use tsingsun\daemon\coroutine\Task;
+use tsingsun\daemon\log\Logger;
+use tsingsun\daemon\server\Server;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use yii\swoole\server\Timer;
-use yii\swoole\web\Application;
-use yii\swoole\web\ErrorHandle;
-use yii\swoole\web\Response;
+use tsingsun\daemon\server\Timer;
+use tsingsun\daemon\web\Application;
+use tsingsun\daemon\web\ErrorHandler;
+use tsingsun\daemon\web\Response;
 use Swoole\Server as SwooleServer;
 
 /**
  * Yii starter for swoole server
- * @package yii\swoole\bootstrap
+ * @package tsingsun\daemon\bootstrap
  */
-class YiiWeb extends BaseBootstrap
+class WebApp extends BaseBootstrap
 {
     public $index = '/index.php';
     /**
@@ -44,7 +44,6 @@ class YiiWeb extends BaseBootstrap
         if ($initFunc instanceof \Closure) {
             $initFunc($this);
         }
-        $this->app->server = $this->server;
 
         $this->initComponent();
     }
@@ -58,20 +57,18 @@ class YiiWeb extends BaseBootstrap
     public function handleRequest($request, $response)
     {
         try {
-            /** @var Application $app */
-            $app = Yii::$app;
             //YII对于协程支持有天然缺陷
 //            $coroutine = Yii::$app->run();
 //            $app->task = new Task($coroutine, Yii::$app);
 //            $app->task->run();
 //            return;
-            $app->run();
+            Yii::$app->run();
 
         } catch (\Exception $e) {
             Yii::$app->getErrorHandler()->handleException($e);
         } catch (\Throwable $e) {
             $eh = Yii::$app->getErrorHandler();
-            if ($eh instanceof ErrorHandle) {
+            if ($eh instanceof ErrorHandler) {
                 $eh->handleFallbackExceptionMessage($e, $e->getPrevious());
             }
         }
@@ -104,13 +101,15 @@ class YiiWeb extends BaseBootstrap
         $app = clone $this->app;
         Yii::$app = &$app;
         $app->set('request', clone $this->app->getRequest());
-        $yiiRes = clone $this->app->getResponse();
+
+        $yiiRes = Yii::$app->getResponse();
         if ($yiiRes instanceof Response) {
             $yiiRes->setSwooleResponse($response);
         }
-        $app->set('response', $yiiRes);
-        $app->set('view', clone $this->app->getView());
-        $app->set('errorHandle', clone $this->app->getErrorHandler());
+
+//        $app->set('response', $yiiRes);
+//        $app->set('view', clone $this->app->getView());
+//        $app->set('errorHandle', clone $this->app->getErrorHandler());
     }
 
     public function onFinish(SwooleServer $serv, int $task_id, string $data)
@@ -150,5 +149,10 @@ class YiiWeb extends BaseBootstrap
         if ($this->app->has('mailer', true)) {
             $this->app->getMailer();
         }
+        //动态方式继承response对象
+//        $nativeResponse = $this->app->getComponents(true)['response']['class'];
+//        $code = "return new class extends $nativeResponse { use \\tsingsun\daemon\web\Response; };";
+//        $response = eval($code);
+//        $this->app->set('response',$response);
     }
 }

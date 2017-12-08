@@ -6,7 +6,7 @@
  * Time: 下午6:24
  */
 
-namespace yii\swoole\server;
+namespace tsingsun\daemon\server\swoole;
 
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;

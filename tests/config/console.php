@@ -22,7 +22,7 @@ return [
     'controllerNamespace' => 'swooleunit\controllers',
     'controllerMap' => [
         'swoole'=>[
-            'class'=> 'yii\swoole\controllers\SwooleController'
+            'class'=> 'tsingsun\daemon\controllers\SwooleController'
         ],
     ],
     'components' => [

@@ -6,11 +6,11 @@
  * Time: 下午6:01
  */
 
-namespace swooleunit\controllers;
+namespace yiiunit\extension\daemon\controllers;
 
 
-use swooleunit\TestCase;
-use yii\swoole\Controllers\SwooleController;
+use yiiunit\extension\daemon\TestCase;
+use tsingsun\daemon\Controllers\SwooleController;
 
 
 class SwooleControllerTest extends TestCase

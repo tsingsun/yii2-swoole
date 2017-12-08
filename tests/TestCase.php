@@ -1,6 +1,6 @@
 <?php
 
-namespace swooleunit;
+namespace yiiunit\extension\daemon;
 
 use yii\helpers\ArrayHelper;
 

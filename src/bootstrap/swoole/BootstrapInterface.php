@@ -6,20 +6,20 @@
  * Time: 上午11:13
  */
 
-namespace yii\swoole\bootstrap;
+namespace tsingsun\daemon\bootstrap\swoole;
 
 use Swoole\Server;
-use yii\swoole\web\Application;
+use tsingsun\daemon\web\Application;
 
 /**
  * 服务启动器接口
- * @package yii\swoole\bootstrap
+ * @package tsingsun\daemon\bootstrap
  */
 interface BootstrapInterface
 {
     /**
-     * worker进程启动，对应于swoole
-     * @see https://wiki.swoole.com/wiki/page/46.html
+     * worker进程启动，
+     * @see https://wiki.swoole.com/wiki/page/46.html about swoole
      * @param Server $server
      * @param $worker_id
      */
@@ -27,15 +27,15 @@ interface BootstrapInterface
 
     /**
      * worker停止
-     * @see https://wiki.swoole.com/wiki/page/47.html
+     * @see https://wiki.swoole.com/wiki/page/47.html about swoole
      * @param Server $server
      * @param $worker_id
      */
     public function onWorkerStop(Server $server, $worker_id);
 
     /**
-     * 接收请求事件，对应于swoole
-     * @see https://wiki.swoole.com/wiki/page/330.html
+     * 接收请求事件
+     * @see https://wiki.swoole.com/wiki/page/330.html about swoole
      * @param $request
      * @param $response
      * @return mixed

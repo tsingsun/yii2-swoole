@@ -6,17 +6,15 @@
  * Time: 下午3:45
  */
 
-namespace yii\swoole\bootstrap;
+namespace tsingsun\daemon\bootstrap\swoole;
 
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use Yii;
-use yii\base\Component;
-use yii\swoole\coroutine\Signal;
-use yii\swoole\coroutine\Task;
-use yii\swoole\server\Server;
-use yii\swoole\server\Timer;
-use yii\swoole\web\Application;
+use tsingsun\daemon\coroutine\Signal;
+use tsingsun\daemon\server\swoole\Server;
+use tsingsun\daemon\server\swoole\Timer;
+use tsingsun\daemon\web\Application;
 use yii\web\HttpException;
 
 abstract class BaseBootstrap implements BootstrapInterface
@@ -27,7 +25,7 @@ abstract class BaseBootstrap implements BootstrapInterface
     protected $server;
 
     /**
-     * @var \yii\swoole\web\Application
+     * @var \tsingsun\daemon\web\Application
      */
     public $app;
 
@@ -65,6 +63,7 @@ abstract class BaseBootstrap implements BootstrapInterface
         Timer::after($this->server->timeout, [$this, 'handleTimeout'], $this->getRequestTimeoutJobId());
         $this->app->on(Application::EVENT_AFTER_RUN,[$this,'onRequestEnd']);
         $this->handleRequest($request,$response);
+        $this->onRequestEnd();
     }
 
     /**
@@ -78,7 +77,7 @@ abstract class BaseBootstrap implements BootstrapInterface
         }
         $logger = Yii::getLogger();
         $logger->flush(true);
-        Yii::$app = $this->app;
+//        Yii::$app = $this->app;
     }
 
     public function onWorkerError($swooleServer, $workerId, $workerPid, $exitCode, $sigNo)
@@ -103,7 +102,6 @@ abstract class BaseBootstrap implements BootstrapInterface
     public function handleTimeout()
     {
         try {
-            Yii::$app->task->setStatus(Signal::TASK_KILLED);
             $exception = new HttpException(408,'服务器超时');
             //handleException中已经初步处理了各类异常
             Yii::$app->getErrorHandler()->handleException($exception);

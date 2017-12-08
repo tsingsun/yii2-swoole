@@ -6,13 +6,13 @@
  * Time: 下午3:23
  */
 
-namespace yii\swoole\log;
+namespace tsingsun\daemon\log;
 
 defined('YII2_SWOOLE_PATH') or define('YII2_SWOOLE_PATH', dirname(__DIR__));
 
 /**
  * Class Log
- * @package yii\swoole\log
+ * @package tsingsun\daemon\log
  */
 class Logger extends \yii\log\Logger
 {
@@ -27,7 +27,7 @@ class Logger extends \yii\log\Logger
             foreach ($ts as $trace) {
                 if (isset($trace['file'], $trace['line']) && strpos($trace['file'], YII2_PATH) !== 0 && strpos($trace['file'], YII2_SWOOLE_PATH) !== 0) {
                     //cli remove start script
-                    if(isset($trace['class']) && $trace['class']=='yii\swoole\server\Server'){
+                    if(isset($trace['class']) && $trace['class']=='tsingsun\daemon\server\Server'){
                         break;
                     }
                     unset($trace['object'], $trace['args']);

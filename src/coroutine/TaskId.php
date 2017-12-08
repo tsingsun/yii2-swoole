@@ -6,7 +6,7 @@
  * Time: 下午4:47
  */
 
-namespace yii\swoole\coroutine;
+namespace tsingsun\daemon\coroutine;
 
 
 class TaskId

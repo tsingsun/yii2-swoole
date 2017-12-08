@@ -6,14 +6,14 @@
  * Time: 下午6:34
  */
 
-namespace yii\swoole\log;
+namespace tsingsun\daemon\log;
 
 
 use yii\base\InvalidConfigException;
 
 /**
  * 使用异步的方式来实现日志写入操作
- * @package yii\swoole\log
+ * @package tsingsun\daemon\log
  */
 class FileTarget extends \yii\log\FileTarget
 {

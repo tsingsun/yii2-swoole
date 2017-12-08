@@ -1,4 +1,6 @@
 <?php
+
+use \tsingsun\daemon\server\swoole\Server;
 /**
  * Created by PhpStorm.
  * User: tsingsun
@@ -10,9 +12,9 @@ defined('WEBROOT') or define('WEBROOT', __DIR__);
 require(__DIR__ . '/../../vendor/autoload.php');
 $config = require(__DIR__ . '/../config/swoole.php');
 
-\yii\swoole\server\Server::run($config,function ($nodeConfig){
-    $server = \yii\swoole\server\Server::autoCreate($nodeConfig);
-    $starter = new \yii\swoole\bootstrap\YiiWeb($server);
+Server::run($config,function ($nodeConfig){
+    $server = Server::autoCreate($nodeConfig);
+    $starter = new \tsingsun\daemon\bootstrap\swoole\WebApp($server);
     //初始化函数独立,为了在启动时,不会加载Yii相关的文件,在库更新时采用reload平滑启动服务器
     $starter->init = function ($bootstrap) {
         defined('YII_DEBUG') or define('YII_DEBUG', true);
@@ -23,9 +25,9 @@ $config = require(__DIR__ . '/../config/swoole.php');
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
-        Yii::setAlias('@swooleunit', __DIR__ . '/../');
-        Yii::$container = new \yii\swoole\di\Container();
-        $bootstrap->app = new \yii\swoole\web\Application($config);
+        Yii::setAlias('@yiiunit/extension/daemon', __DIR__ . '/../');
+        Yii::$container = new \tsingsun\daemon\di\Container();
+        $bootstrap->app = new \tsingsun\daemon\web\Application($config);
     };
     $server->bootstrap = $starter;
     $server->start();

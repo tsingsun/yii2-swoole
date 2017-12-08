@@ -6,7 +6,7 @@
  * Time: 下午3:04
  */
 
-namespace yii\swoole\web;
+namespace tsingsun\daemon\web;
 
 use Yii;
 use yii\base\InvalidConfigException;

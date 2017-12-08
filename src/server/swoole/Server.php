@@ -6,7 +6,7 @@
  * Time: 下午7:25
  */
 
-namespace yii\swoole\server;
+namespace tsingsun\daemon\server\swoole;
 
 use Swoole;
 use yii\base\ErrorHandler;
@@ -15,7 +15,7 @@ use yii\base\ErrorHandler;
  * swoole server
  * events: 'Start', 'ManagerStart', 'ManagerStop', 'PipeMessage', 'Task', 'Packet', 'Finish',
  *         'Receive', 'Connect', 'Close', 'Timer', 'WorkerStart', 'WorkerStop', 'Shutdown', 'WorkerError'
- * @package yii\swoole\server
+ * @package tsingsun\daemon\server
  */
 abstract class Server
 {
@@ -39,7 +39,7 @@ abstract class Server
      */
     public $timeout = 30 * 1000;
     /**
-     * @var \yii\swoole\bootstrap\BootstrapInterface
+     * @var \tsingsun\daemon\bootstrap\swoole\BootstrapInterface
      */
     public $bootstrap;
     /**
@@ -219,7 +219,7 @@ abstract class Server
             if($instance instanceof Server){
                return $instance;
             }
-            throw new \Exception('class must implement yii\swoole\server');
+            throw new \Exception('class must implement tsingsun\daemon\server');
         }else{
             throw new \Exception("config 'class' not found");
         }

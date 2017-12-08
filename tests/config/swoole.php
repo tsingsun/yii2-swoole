@@ -6,7 +6,7 @@
  * Time: 下午5:03
  */
 return [
-    'class'=>'yii\swoole\server\HttpServer',
+    'class'=>'tsingsun\daemon\server\swoole\HttpServer',
     'setting' => [
         'daemonize'=>0,
 //        'reactor_num'=>1,

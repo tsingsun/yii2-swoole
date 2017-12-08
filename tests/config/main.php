@@ -13,7 +13,7 @@ $config = [
     'language'=>'en',
     'sourceLanguage'=>'zh-CN',
     'timeZone'=>'Asia/Shanghai',
-    'controllerNamespace' => 'swooleunit\controllers',
+    'controllerNamespace' => 'yiiunit\extension\daemon\controllers',
     'bootstrap' => [
         'log',
         'contentNegotiator'=>[
@@ -35,6 +35,12 @@ $config = [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'B1uah2HVO-CEdFt5o-G46_4-dL3aEo_K',
         ],
+        'reponse' =>[
+            'class'=>'tsingsun\daemon\web\Response'
+        ],
+        'session' =>[
+            'class'=> 'tsingsun\daemon\web\Session',
+        ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
@@ -43,6 +49,7 @@ $config = [
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
+            'class'=> 'tsingsun\daemon\web\ErrorHandler',
 //            'errorAction' => 'site/error',
         ],
         'mailer' => [

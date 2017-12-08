@@ -6,13 +6,13 @@
  * Time: 上午11:13
  */
 
-namespace yii\swoole\Controllers;
+namespace tsingsun\daemon\Controllers;
 
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\console\Controller;
 use yii\helpers\Console;
-use yii\swoole\server\Server;
+use tsingsun\daemon\server\Server;
 
 /**
  * Usage: swoole/[actions] [options] [-c]=<file>
@@ -20,7 +20,7 @@ use yii\swoole\server\Server;
  *   swoole/stop -c=@config/swoole.php
  *
  *   -c <file>      look config file path,it can use alias path,if null,will get yii params config
- * @package yii\swoole\Controllers
+ * @package tsingsun\daemon\Controllers
  */
 class SwooleController extends Controller
 {

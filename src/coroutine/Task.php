@@ -6,7 +6,7 @@
  * Time: 下午4:52
  */
 
-namespace yii\swoole\coroutine;
+namespace tsingsun\daemon\coroutine;
 use yii\base\Component;
 use yii\base\Event;
 
@@ -14,7 +14,7 @@ use yii\base\Event;
  * Class Task
  * Task包装了具体协程函数，并提供相应的get set方法。
  *
- * @package yii\swoole\coroutine
+ * @package tsingsun\daemon\coroutine
  */
 class Task
 {
