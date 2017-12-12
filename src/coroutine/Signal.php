@@ -6,12 +6,12 @@
  * Time: 下午4:46
  */
 
-namespace tsingsun\daemon\coroutine;
+namespace tsingsun\swoole\coroutine;
 
 /**
  * Singal类里包含了系统调用所需的信号量。指明了协程在一轮运行之后应该处于的状态。
  *
- * @package tsingsun\daemon\coroutine
+ * @package tsingsun\swoole\coroutine
  */
 class Signal
 {

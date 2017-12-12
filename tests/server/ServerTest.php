@@ -6,10 +6,10 @@
  * Time: 下午5:26
  */
 
-namespace yiiunit\extension\daemon\server;
+namespace yiiunit\extension\swoole\server;
 
-use yiiunit\extension\daemon\TestCase;
-use tsingsun\daemon\server\Server;
+use yiiunit\extension\swoole\TestCase;
+use tsingsun\swoole\server\Server;
 
 
 class ServerTest extends TestCase

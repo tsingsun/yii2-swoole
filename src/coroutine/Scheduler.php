@@ -6,7 +6,7 @@
  * Time: 下午4:50
  */
 
-namespace tsingsun\daemon\coroutine;
+namespace tsingsun\swoole\coroutine;
 
 /**
  * Class Scheduler
@@ -14,7 +14,7 @@ namespace tsingsun\daemon\coroutine;
  * 1. 获取Task里的协程函数跑完一轮的返回值
  * 2. 根据返回值的类型采取不同的处理方式，如系统调用、子协程、普通yield值、检查协程栈等等。
  * 3. 在子协程的调用过程中，负责父子协程的进栈出栈，yield值的传递等等。
- * @package tsingsun\daemon\coroutine
+ * @package tsingsun\swoole\coroutine
  */
 class Scheduler
 {

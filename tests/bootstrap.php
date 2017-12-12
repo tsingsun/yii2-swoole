@@ -14,5 +14,5 @@ require_once($vendorRoot . '/autoload.php');
 require_once($vendorRoot . '/yiisoft/yii2/Yii.php');
 Yii::setAlias('@yii/daemon', __DIR__ . '/../src/');
 //Yii::setAlias('@app', __DIR__ . '/../');
-Yii::setAlias('@yiiunit\extension\daemon', __DIR__ . '/');
+Yii::setAlias('@yiiunit\extension\swoole', __DIR__ . '/');
 require_once(__DIR__ . '/TestCase.php');

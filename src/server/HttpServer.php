@@ -6,12 +6,11 @@
  * Time: 下午6:24
  */
 
-namespace tsingsun\daemon\server\swoole;
+namespace tsingsun\swoole\server;
 
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use Swoole\Server as SwooleServer;
-use Yii;
 use yii\helpers\FileHelper;
 
 class HttpServer extends Server

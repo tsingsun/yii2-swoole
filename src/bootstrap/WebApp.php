@@ -6,17 +6,17 @@
  * Time: 上午10:41
  */
 
-namespace tsingsun\daemon\bootstrap\swoole;
+namespace tsingsun\swoole\bootstrap;
 
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use tsingsun\daemon\web\ErrorHandler;
-use tsingsun\daemon\web\swoole\Response;
+use tsingsun\swoole\web\ErrorHandler;
+use tsingsun\swoole\web\Response;
 use Yii;
 
 /**
  * Yii starter for swoole server
- * @package tsingsun\daemon\bootstrap
+ * @package tsingsun\swoole\bootstrap
  */
 class WebApp extends BaseBootstrap
 {

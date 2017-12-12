@@ -6,23 +6,23 @@
  * Time: 下午4:28
  */
 
-namespace tsingsun\daemon\di;
+namespace tsingsun\swoole\di;
 
 use Yii;
 
 /**
  * 使用该类，替换了部分类的实现，方便YII项目的迁移
- * @package tsingsun\daemon\di
+ * @package tsingsun\swoole\di
  */
 class Container extends \yii\di\Container
 {
 
     private $classCompatible = [
-        'yii\web\Response' => 'tsingsun\daemon\web\swoole\Response',
-        'yii\web\ErrorHandler' => 'tsingsun\daemon\web\ErrorHandler',
-        'yii\log\Logger' => 'tsingsun\daemon\log\Logger',
-        'yii\web\Session' => 'tsingsun\daemon\web\Session',
-        'yii\log\FileTarget' => 'tsingsun\daemon\log\FileTarget'
+        'yii\web\Response' => 'tsingsun\swoole\web\Response',
+        'yii\web\ErrorHandler' => 'tsingsun\swoole\web\ErrorHandler',
+        'yii\log\Logger' => 'tsingsun\swoole\log\Logger',
+        'yii\web\Session' => 'tsingsun\swoole\web\Session',
+        'yii\log\FileTarget' => 'tsingsun\swoole\log\FileTarget'
     ];
 
     protected $autoReplace = true;

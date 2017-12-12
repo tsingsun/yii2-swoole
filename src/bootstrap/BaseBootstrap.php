@@ -6,13 +6,13 @@
  * Time: 下午3:45
  */
 
-namespace tsingsun\daemon\bootstrap\swoole;
+namespace tsingsun\swoole\bootstrap;
 
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use tsingsun\daemon\server\swoole\Server;
-use tsingsun\daemon\server\swoole\Timer;
-use tsingsun\daemon\web\Application;
+use tsingsun\swoole\server\Server;
+use tsingsun\swoole\server\Timer;
+use tsingsun\swoole\web\Application;
 use Yii;
 use yii\base\Event;
 use yii\web\HttpException;
@@ -26,7 +26,7 @@ abstract class BaseBootstrap implements BootstrapInterface
     protected $server;
 
     /**
-     * @var \tsingsun\daemon\web\Application
+     * @var \tsingsun\swoole\web\Application
      */
     public $app;
 
@@ -203,7 +203,7 @@ abstract class BaseBootstrap implements BootstrapInterface
         }
         //动态方式继承response对象
 //        $nativeResponse = $this->app->getComponents(true)['response']['class'];
-//        $code = "return new class extends $nativeResponse { use \\tsingsun\daemon\web\Response; };";
+//        $code = "return new class extends $nativeResponse { use \\tsingsun\swoole\web\Response; };";
 //        $response = eval($code);
 //        $this->app->set('response',$response);
     }

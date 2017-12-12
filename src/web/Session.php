@@ -6,14 +6,14 @@
  * Time: 下午6:22
  */
 
-namespace tsingsun\daemon\web;
+namespace tsingsun\swoole\web;
 
 use Yii;
 use yii\base\InvalidConfigException;
 
 /**
  * Class Session
- * @package tsingsun\daemon\web
+ * @package tsingsun\swoole\web
  */
 class Session extends \yii\web\Session
 {

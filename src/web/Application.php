@@ -1,6 +1,6 @@
 <?php
 
-namespace tsingsun\daemon\web;
+namespace tsingsun\swoole\web;
 
 use Yii;
 use yii\base\BootstrapInterface;
@@ -8,7 +8,7 @@ use yii\base\InvalidConfigException;
 use yii\base\ExitException;
 use yii\base\InvalidRouteException;
 use yii\helpers\Url;
-use tsingsun\daemon\coroutine\Task;
+use tsingsun\swoole\coroutine\Task;
 use yii\web\NotFoundHttpException;
 use yii\web\UrlNormalizerRedirectException;
 

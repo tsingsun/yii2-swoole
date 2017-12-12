@@ -6,7 +6,7 @@
  * Time: 下午10:30
  */
 
-namespace tsingsun\daemon\web;
+namespace tsingsun\swoole\web;
 
 use Yii;
 use yii\base\ErrorException;
@@ -14,7 +14,7 @@ use yii\base\ExitException;
 
 /**
  * swoole不支持set_exception_handler,在ErrorHandle中退出的方法都需要重写
- * @package tsingsun\daemon\web
+ * @package tsingsun\swoole\web
  */
 class ErrorHandler extends \yii\web\ErrorHandler
 {

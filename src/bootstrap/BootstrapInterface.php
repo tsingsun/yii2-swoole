@@ -6,14 +6,13 @@
  * Time: 上午11:13
  */
 
-namespace tsingsun\daemon\bootstrap\swoole;
+namespace tsingsun\swoole\bootstrap;
 
 use Swoole\Server;
-use tsingsun\daemon\web\Application;
 
 /**
  * 服务启动器接口
- * @package tsingsun\daemon\bootstrap
+ * @package tsingsun\swoole\bootstrap
  */
 interface BootstrapInterface
 {

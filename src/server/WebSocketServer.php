@@ -6,11 +6,10 @@
  * Time: 上午11:49
  */
 
-namespace tsingsun\daemon\server\swoole;
+namespace tsingsun\swoole\server;
 
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
-use Swoole\Http\Request;
 
 
 class WebSocketServer extends HttpServer

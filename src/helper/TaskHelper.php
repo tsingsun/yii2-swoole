@@ -6,12 +6,12 @@
  * Time: 下午4:11
  */
 
-namespace tsingsun\daemon\helper;
+namespace tsingsun\swoole\helper;
 
-use tsingsun\daemon\coroutine\Signal;
-use tsingsun\daemon\coroutine\SysCall;
-use tsingsun\daemon\coroutine\Task;
-use tsingsun\daemon\server\Timer;
+use tsingsun\swoole\coroutine\Signal;
+use tsingsun\swoole\coroutine\SysCall;
+use tsingsun\swoole\coroutine\Task;
+use tsingsun\swoole\server\Timer;
 
 class TaskHelper
 {

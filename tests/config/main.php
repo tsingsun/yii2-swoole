@@ -13,7 +13,7 @@ $config = [
     'language'=>'en',
     'sourceLanguage'=>'zh-CN',
     'timeZone'=>'Asia/Shanghai',
-    'controllerNamespace' => 'yiiunit\extension\daemon\controllers',
+    'controllerNamespace' => 'yiiunit\extension\swoole\controllers',
     'bootstrap' => [
         'log',
         'contentNegotiator'=>[
@@ -36,20 +36,20 @@ $config = [
             'cookieValidationKey' => 'B1uah2HVO-CEdFt5o-G46_4-dL3aEo_K',
         ],
         'reponse' =>[
-            'class'=>'tsingsun\daemon\web\swoole\Response'
+            'class'=>'tsingsun\swoole\web\Response'
         ],
         'session' =>[
-            'class'=> 'tsingsun\daemon\web\Session',
+            'class'=> 'tsingsun\swoole\web\Session',
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'yiiunit\extension\daemon\TestIdentity',
+            'identityClass' => 'yiiunit\extension\swoole\TestIdentity',
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
-            'class'=> 'tsingsun\daemon\web\ErrorHandler',
+            'class'=> 'tsingsun\swoole\web\ErrorHandler',
 //            'errorAction' => 'site/error',
         ],
 //        'mailer' => [

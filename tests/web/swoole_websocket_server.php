@@ -1,6 +1,6 @@
 <?php
 
-use \tsingsun\daemon\server\swoole\WebSocketServer;
+use \tsingsun\swoole\server\WebSocketServer;
 /**
  * Created by PhpStorm.
  * User: tsingsun
@@ -11,7 +11,7 @@ defined('WEBROOT') or define('WEBROOT', __DIR__);
 
 require(__DIR__ . '/../../vendor/autoload.php');
 $config = [
-    'class'=>'tsingsun\daemon\server\swoole\WebSocketServer',
+    'class'=>'tsingsun\swoole\server\swoole\WebSocketServer',
     'serverType'=>'websocket',
     'port'=>9502,
     'setting' => [
@@ -29,7 +29,7 @@ $config = [
 
 WebSocketServer::run($config,function ($nodeConfig){
     $server = WebSocketServer::autoCreate($nodeConfig);
-    $starter = new \tsingsun\daemon\bootstrap\swoole\WebSocketApp($server);
+    $starter = new \tsingsun\swoole\bootstrap\WebSocketApp($server);
     //初始化函数独立,为了在启动时,不会加载Yii相关的文件,在库更新时采用reload平滑启动服务器
     $starter->init = function ($bootstrap) {
         defined('YII_DEBUG') or define('YII_DEBUG', true);
@@ -40,9 +40,9 @@ WebSocketServer::run($config,function ($nodeConfig){
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
-        Yii::setAlias('@yiiunit/extension/daemon', __DIR__ . '/../');
-        Yii::$container = new \tsingsun\daemon\di\Container();
-        $bootstrap->app = new \tsingsun\daemon\web\Application($config);
+        Yii::setAlias('@yiiunit/extension/swoole', __DIR__ . '/../');
+        Yii::$container = new \tsingsun\swoole\di\Container();
+        $bootstrap->app = new \tsingsun\swoole\web\Application($config);
     };
     $server->bootstrap = $starter;
     $server->start();
