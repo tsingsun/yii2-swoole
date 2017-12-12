@@ -17,7 +17,7 @@ use yii\base\ErrorHandler;
  *         'Receive', 'Connect', 'Close', 'Timer', 'WorkerStart', 'WorkerStop', 'Shutdown', 'WorkerError'
  * @package tsingsun\daemon\server
  */
-abstract class Server
+class Server
 {
 
     protected $id;
@@ -75,7 +75,7 @@ abstract class Server
                 $this->swoole = new Swoole\Http\Server($this->host,$this->port);
                 $events = ['Request','WorkerError'];
                 break;
-            case 'socket':
+            case 'websocket':
                 $this->swoole = new Swoole\WebSocket\Server($this->host,$this->port);
                 $events = ['Open','Message','Close','HandShake'];
                 break;
@@ -155,7 +155,9 @@ abstract class Server
             $this->setProcessTitle($this->id,'worker process');
         }
         try{
-            $this->bootstrap->onWorkerStart($server,$worker_id);
+            if($this->bootstrap){
+                $this->bootstrap->onWorkerStart($server,$worker_id);
+            }
         }catch (\Exception $e){
             print_r("start yii error:".ErrorHandler::convertExceptionToString($e).PHP_EOL);
             $this->swoole->shutdown();
@@ -165,7 +167,9 @@ abstract class Server
 
     public function onWorkerStop(Swoole\Server $server,$worker_id)
     {
-        $this->bootstrap->onWorkerStop($server,$worker_id);
+        if($this->bootstrap){
+            $this->bootstrap->onWorkerStop($server,$worker_id);
+        }
     }
 
     /**

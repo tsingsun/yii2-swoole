@@ -109,35 +109,9 @@ return [
     ],
 ];
 ```
-2.  启动文件,一般放置在web目录下.如命名为http_server.php,如:
-```php
-defined('WEBROOT') or define('WEBROOT', __DIR__);
+2.  启动文件  
+启动文件为服务启动脚本,根据不同的服务类型定制,也可以根据业务来定制,具体请查看运行方式中的各服务器说明.
 
-require(__DIR__ . '/../../vendor/autoload.php');
-$config = require(__DIR__ . '/../config/swoole.php');
-
-\tsingsun\daemon\server\Server::run($config,function ($nodeConfig){
-    $server = \tsingsun\daemon\server\Server::autoCreate($nodeConfig);
-    $starter = new \tsingsun\daemon\bootstrap\YiiWeb($server);
-    //初始化函数独立,为了在启动时,不会加载Yii相关的文件,在库更新时采用reload平滑启动服务器
-    $starter->init = function ($bootstrap) {
-        require(__DIR__ . '/../../vendor/yiisoft/yii2/Yii.php');
-
-        $config = yii\helpers\ArrayHelper::merge(
-            require(__DIR__ . '/../config/main.php'),
-            require(__DIR__ . '/../config/main-local.php')
-        );
-        //需要在此先设置资源有关的别名
-        Yii::setAlias('@webroot', WEBROOT);
-        Yii::setAlias('@web', '/');
-        //可以自定义实现
-        Yii::$container = new \tsingsun\daemon\di\Container();
-        $bootstrap->app = new \tsingsun\daemon\web\Application($config);        
-    };
-    $server->bootstrap = $starter;
-    $server->start();
-});
-```
 3.  cli控制命令 
 
 Usage: php [startScript] [command]
@@ -152,9 +126,7 @@ php http_server.php stop
 ```
 4.  运行方式
 
-* HttpServer
-
-    已经可以做为高性能的服务器运行,但由于swoole_http_server对Http协议的支持并不完整，建议仅作为应用服务器。并且在前端增加Nginx作为代理
+* [HttpServer](swooleHttpServer.md):把swoole当成http服务器运行.
     
 * WebSocketServer --TODO
 * TCP/UDP Server  --TODO

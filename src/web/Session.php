@@ -21,9 +21,6 @@ class Session extends \yii\web\Session
     {
 //        parent::init();
         //register_shutdown_function([$this, 'close']);
-        if(!Yii::$app->has('session',true)){
-            throw new InvalidConfigException('If use Session Component,please explicit declaration in config file');
-        }
         if ($this->getIsActive()) {
             Yii::warning('Session is already started', __METHOD__);
             $this->updateFlashCounters();

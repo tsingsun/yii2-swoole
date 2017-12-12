@@ -18,7 +18,7 @@ class Container extends \yii\di\Container
 {
 
     private $classCompatible = [
-        'yii\web\Response' => 'tsingsun\daemon\web\Response',
+        'yii\web\Response' => 'tsingsun\daemon\web\swoole\Response',
         'yii\web\ErrorHandler' => 'tsingsun\daemon\web\ErrorHandler',
         'yii\log\Logger' => 'tsingsun\daemon\log\Logger',
         'yii\web\Session' => 'tsingsun\daemon\web\Session',

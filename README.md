@@ -7,6 +7,9 @@
 
 [swoole方式](doc/swoole.md)
 
+### todo
+* db 链接长久不使用的失效问题
+
 ## workerman
 
 开发中

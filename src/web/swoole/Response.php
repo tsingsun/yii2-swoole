@@ -6,11 +6,15 @@
  * Time: 下午3:04
  */
 
-namespace tsingsun\daemon\web;
+namespace tsingsun\daemon\web\swoole;
 
 use Yii;
 use yii\base\InvalidConfigException;
 
+/**
+ * Class Response for swoole
+ * @package tsingsun\daemon\web
+ */
 class Response extends \yii\web\Response
 {
     /**
@@ -27,6 +31,12 @@ class Response extends \yii\web\Response
     {
         return $this->swooleResponse;
     }
+
+    public function send()
+    {
+        return parent::send();
+    }
+
     /**
      * @inheritdoc
      */

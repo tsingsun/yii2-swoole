@@ -36,7 +36,7 @@ $config = [
             'cookieValidationKey' => 'B1uah2HVO-CEdFt5o-G46_4-dL3aEo_K',
         ],
         'reponse' =>[
-            'class'=>'tsingsun\daemon\web\Response'
+            'class'=>'tsingsun\daemon\web\swoole\Response'
         ],
         'session' =>[
             'class'=> 'tsingsun\daemon\web\Session',
@@ -45,27 +45,27 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => 'yiiunit\extension\daemon\TestIdentity',
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
             'class'=> 'tsingsun\daemon\web\ErrorHandler',
 //            'errorAction' => 'site/error',
         ],
-        'mailer' => [
-            'class' => 'yii\swiftmailer\Mailer',
-            // send all mails to a file by default. You have to set
-            // 'useFileTransport' to false and configure a transport
-            // for the mailer to send real emails.
-            'useFileTransport' => true,
-        ],
+//        'mailer' => [
+//            'class' => 'yii\swiftmailer\Mailer',
+//            // send all mails to a file by default. You have to set
+//            // 'useFileTransport' to false and configure a transport
+//            // for the mailer to send real emails.
+//            'useFileTransport' => true,
+//        ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
                     'exportInterval'=> 1,
-//                    'levels' => ['error'],
+                    'levels' => ['error'],
                     'logFile' => '@runtime/logs/'.date('ymd').'.log',
                     'logVars'=>[],
                 ],

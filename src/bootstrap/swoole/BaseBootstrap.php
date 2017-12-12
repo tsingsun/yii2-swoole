@@ -10,15 +10,16 @@ namespace tsingsun\daemon\bootstrap\swoole;
 
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use Yii;
-use tsingsun\daemon\coroutine\Signal;
 use tsingsun\daemon\server\swoole\Server;
 use tsingsun\daemon\server\swoole\Timer;
 use tsingsun\daemon\web\Application;
+use Yii;
+use yii\base\Event;
 use yii\web\HttpException;
 
 abstract class BaseBootstrap implements BootstrapInterface
 {
+    public $index = '/index.php';
     /**
      * @var Server
      */
@@ -28,6 +29,29 @@ abstract class BaseBootstrap implements BootstrapInterface
      * @var \tsingsun\daemon\web\Application
      */
     public $app;
+
+    /**
+     * @var callable
+     */
+    public $init;
+    /**
+     * @var int worker线程的ID
+     */
+    protected $workerId;
+    /**
+     * @var string 一次请求的ID
+     */
+    protected $requestId;
+
+    public function __construct(Server $server)
+    {
+        $this->server = $server;
+        $this->init();
+    }
+
+    public function init()
+    {
+    }
 
     /**
      * 在该方法中实际处理请求
@@ -42,16 +66,38 @@ abstract class BaseBootstrap implements BootstrapInterface
      * @param SwooleRequest $request
      * @return mixed
      */
-    protected abstract function setupEnvironment(SwooleRequest $request,SwooleResponse $response);
-
-    public function __construct(Server $server)
+    protected function setupEnvironment($request)
     {
-        $this->server = $server;
-        $this->init();
+        if($request){
+            $_GET = isset($request->get) ? $request->get : [];
+            $_POST = isset($request->post) ? $request->post : [];
+            $_SERVER = array_change_key_case($request->server, CASE_UPPER);
+            $_FILES = isset($request->files) ? $request->files : [];
+            $_COOKIE = isset($request->cookie) ? $request->cookie : [];
+
+            if (isset($request->header)) {
+                foreach ($request->header as $key => $value) {
+                    $key = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
+                    $_SERVER[$key] = $value;
+                }
+            }
+        }
+        $this->initServerVars();
+
+        $app = clone $this->app;
+        Yii::$app = &$app;
+        Yii::$app->set('request',clone $this->app->request);
     }
 
-    public function init()
+    public function onWorkerStart(\Swoole\Server $server, $worker_id)
     {
+        $this->workerId = $worker_id;
+        $initFunc = $this->init;
+        if ($initFunc instanceof \Closure) {
+            $initFunc($this);
+        }
+
+        $this->initComponent();
     }
 
     /**
@@ -59,12 +105,14 @@ abstract class BaseBootstrap implements BootstrapInterface
      */
     public function onRequest($request, $response)
     {
-        $this->setupEnvironment($request,$response);
+        $this->setupEnvironment($request);
+        Yii::$app->on(Application::EVENT_BEFORE_REQUEST,[$this,'onBeforeRequest']);
         Timer::after($this->server->timeout, [$this, 'handleTimeout'], $this->getRequestTimeoutJobId());
-        $this->app->on(Application::EVENT_AFTER_RUN,[$this,'onRequestEnd']);
-        $this->handleRequest($request,$response);
-        $this->onRequestEnd();
+        Yii::$app->on(Application::EVENT_AFTER_RUN,[$this,'onRequestEnd']);
+        return $this->handleRequest($request,$response);
     }
+
+    public function onBeforeRequest(Event $event){}
 
     /**
      * @inheritdoc
@@ -77,7 +125,7 @@ abstract class BaseBootstrap implements BootstrapInterface
         }
         $logger = Yii::getLogger();
         $logger->flush(true);
-//        Yii::$app = $this->app;
+        $this->requestId = null;
     }
 
     public function onWorkerError($swooleServer, $workerId, $workerPid, $exitCode, $sigNo)
@@ -96,6 +144,22 @@ abstract class BaseBootstrap implements BootstrapInterface
         return 1;
     }
 
+    public function onFinish(\Swoole\Server $serv, int $task_id, string $data)
+    {
+        //echo $data;
+    }
+
+    /**
+     * @param \Swoole\Server $server
+     * @param $worker_id
+     */
+    public function onWorkerStop(\Swoole\Server $server, $worker_id)
+    {
+        if (!$server->taskworker) {
+            Yii::getLogger()->flush(true);
+        }
+    }
+
     /**
      * 处理超时请求
      */
@@ -112,6 +176,50 @@ abstract class BaseBootstrap implements BootstrapInterface
 
     private function getRequestTimeoutJobId()
     {
-        return spl_object_hash(Yii::$app->request) . '_handle_timeout';
+        if(!$this->requestId){
+            $this->requestId = spl_object_hash(Yii::$app->request) . '_handle_timeout';
+        }
+        return $this->requestId;
+    }
+
+    /**
+     * 初始化一些可以复用的组件
+     */
+    private function initComponent()
+    {
+        $this->initServerVars();
+        $this->app->getSecurity();
+        $this->app->getUrlManager();
+        $this->app->getRequest();
+
+        if ($this->app->has('session', true)) {
+            $this->app->getSession();
+        }
+        $this->app->getView();
+        $this->app->getDb();
+        $this->app->getUser();
+        if ($this->app->has('mailer', true)) {
+            $this->app->getMailer();
+        }
+        //动态方式继承response对象
+//        $nativeResponse = $this->app->getComponents(true)['response']['class'];
+//        $code = "return new class extends $nativeResponse { use \\tsingsun\daemon\web\Response; };";
+//        $response = eval($code);
+//        $this->app->set('response',$response);
+    }
+
+    /**
+     * 初始化Yii框架所需要的$_SERVER变量以及执行过程中所需要的通用变量
+     */
+    protected function initServerVars()
+    {
+        //使application运行时不会报错
+        $file = $this->server->root . $this->index;
+
+        $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['DOCUMENT_URI'] = $this->index;
+        $_SERVER['SCRIPT_FILENAME'] = $file;
+        $_SERVER['SERVER_ADDR'] = '127.0.0.1';
+        $_SERVER['SERVER_NAME'] = 'localhost';
+        $_SERVER['WORKER_ID'] = $this->workerId;
     }
 }

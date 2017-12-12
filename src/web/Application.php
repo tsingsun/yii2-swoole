@@ -17,7 +17,7 @@ use yii\web\UrlNormalizerRedirectException;
  */
 class Application extends \yii\web\Application
 {
-    const EVENT_AFTER_RUN = 'after_run';
+    const EVENT_AFTER_RUN = 'afterRun';
 
     private $bootstrapComponents = [];
 
@@ -76,7 +76,7 @@ class Application extends \yii\web\Application
     /**
      * 在run开始前执行配置文件启动组件
      */
-    private function beforeRun()
+    public function beforeRun()
     {
         $this->runComponentBootstrap();
     }
