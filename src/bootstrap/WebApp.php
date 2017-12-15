@@ -48,6 +48,8 @@ class WebApp extends BaseBootstrap
             if ($eh instanceof ErrorHandler) {
                 $eh->handleFallbackExceptionMessage($e, $e->getPrevious());
             }
+        } finally {
+            Yii::$app->trigger(Yii::$app::EVENT_AFTER_RUN);
         }
     }
 

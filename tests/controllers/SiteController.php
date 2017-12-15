@@ -18,10 +18,12 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-//        if(!Yii::$app->session->has('a')){
-//            Yii::$app->session['a'] =  rand();
-//        }
-        return $this->render('index');
+        if(!Yii::$app->session->has('a')){
+            Yii::$app->session['a'] =  rand();
+        }
+        return $this->render('index',[
+            'session'=> Yii::$app->session['a'],
+        ]);
     }
 
     public function actionJson(){

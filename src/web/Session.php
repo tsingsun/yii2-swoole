@@ -17,22 +17,15 @@ use yii\base\InvalidConfigException;
  */
 class Session extends \yii\web\Session
 {
+    use SessionTrait;
+
     public function init()
     {
-//        parent::init();
-        //register_shutdown_function([$this, 'close']);
+        parent::init();
+//        register_shutdown_function([$this, 'close']);
         if ($this->getIsActive()) {
             Yii::warning('Session is already started', __METHOD__);
             $this->updateFlashCounters();
         }
     }
-
-    public function close()
-    {
-        parent::close();
-        //在session_write_close后,清除当前进程session数据
-        $_SESSION = [];
-    }
-
-
 }

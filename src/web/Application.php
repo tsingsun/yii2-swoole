@@ -68,8 +68,6 @@ class Application extends \yii\web\Application
         } catch (ExitException $e) {
             $this->end($e->statusCode, isset($response) ? $response : null);
             return $e->statusCode;
-        } finally {
-            $this->trigger(self::EVENT_AFTER_RUN);
         }
     }
 

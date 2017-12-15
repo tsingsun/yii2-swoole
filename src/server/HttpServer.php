@@ -8,6 +8,7 @@
 
 namespace tsingsun\swoole\server;
 
+use Swoole\Coroutine;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use Swoole\Server as SwooleServer;

@@ -61,15 +61,6 @@ $config = [
 //        ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
-            'targets' => [
-                [
-                    'class' => 'yii\log\FileTarget',
-                    'exportInterval'=> 1,
-                    'levels' => ['error'],
-                    'logFile' => '@runtime/logs/'.date('ymd').'.log',
-                    'logVars'=>[],
-                ],
-            ],
         ],
         'db' => $db,
         'urlManager' => [

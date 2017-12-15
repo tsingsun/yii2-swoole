@@ -22,7 +22,11 @@ class Container extends \yii\di\Container
         'yii\web\ErrorHandler' => 'tsingsun\swoole\web\ErrorHandler',
         'yii\log\Logger' => 'tsingsun\swoole\log\Logger',
         'yii\web\Session' => 'tsingsun\swoole\web\Session',
-        'yii\log\FileTarget' => 'tsingsun\swoole\log\FileTarget'
+        'yii\log\FileTarget' => 'tsingsun\swoole\log\FileTarget',
+        'yii\db\Command'       => 'tsingsun\swoole\db\Command',
+        'yii\db\Connection'    => 'tsingsun\swoole\db\Connection',
+        'yii\redis\Connection'    => 'tsingsun\swoole\redis\Connection',
+        'yii\redis\Session'    => 'tsingsun\swoole\redis\Session',
     ];
 
     protected $autoReplace = true;

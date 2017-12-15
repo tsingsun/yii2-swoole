@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "abcec6e2a374b97f645b6d3a1ca1cb2f",
+    "content-hash": "97ebfc170115973d249641847280bbb1",
     "packages": [
         {
             "name": "bower-asset/inputmask",
@@ -477,12 +477,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/eaglewu/swoole-ide-helper.git",
-                "reference": "a30eba74914be54fb747579b033015c73eacef48"
+                "reference": "009323c508d6ea41b9c3f171428f110efced1fe2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://files.phpcomposer.com/files/eaglewu/swoole-ide-helper/a30eba74914be54fb747579b033015c73eacef48.zip",
-                "reference": "a30eba74914be54fb747579b033015c73eacef48",
+                "url": "https://files.phpcomposer.com/files/eaglewu/swoole-ide-helper/009323c508d6ea41b9c3f171428f110efced1fe2.zip",
+                "reference": "009323c508d6ea41b9c3f171428f110efced1fe2",
                 "shasum": ""
             },
             "type": "library",
@@ -499,7 +499,7 @@
                 }
             ],
             "description": "Swoole 在IDE下自动识别类、函数、宏，自动补全函数名",
-            "time": "2017-11-09T06:44:51+00:00"
+            "time": "2017-12-12T09:05:39+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -1571,6 +1571,54 @@
                 "validate"
             ],
             "time": "2016-11-23T20:04:58+00:00"
+        },
+        {
+            "name": "yiisoft/yii2-redis",
+            "version": "2.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yiisoft/yii2-redis.git",
+                "reference": "3891bb19f3ddc7ad744b439fe1d656ebb5b60a99"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/yiisoft/yii2-redis/3891bb19f3ddc7ad744b439fe1d656ebb5b60a99.zip",
+                "reference": "3891bb19f3ddc7ad744b439fe1d656ebb5b60a99",
+                "shasum": ""
+            },
+            "require": {
+                "yiisoft/yii2": "~2.0.13"
+            },
+            "type": "yii2-extension",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "yii\\redis\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Carsten Brandt",
+                    "email": "mail@cebe.cc"
+                }
+            ],
+            "description": "Redis Cache, Session and ActiveRecord for the Yii framework",
+            "keywords": [
+                "active-record",
+                "cache",
+                "redis",
+                "session",
+                "yii2"
+            ],
+            "time": "2017-12-11T21:17:34+00:00"
         }
     ],
     "aliases": [],
