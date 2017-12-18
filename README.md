@@ -88,7 +88,7 @@ return [
         'log_file' => __DIR__.'/../runtime/logs/swoole.log',
         'debug_mode'=> 1,
         'user'=>'tsingsun',
-        group'=>'staff',
+        'group'=>'staff',
     ],
 ];
 ```
