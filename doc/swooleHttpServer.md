@@ -3,6 +3,8 @@ Swoole Http Server
 
 已经可以做为高性能的服务器运行,但由于swoole_http_server对Http协议的支持并不完整，建议仅作为应用服务器。并且在前端增加Nginx作为代理
 
+为了开发方便,httpserver同时支持了静态文件的请求.
+
 ## 使用方法
 
 1.  将swoole配置文件放在配置文件夹中

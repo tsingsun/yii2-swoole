@@ -39,7 +39,7 @@ class Server
      */
     public $timeout = 30 * 1000;
     /**
-     * @var \tsingsun\swoole\bootstrap\swoole\BootstrapInterface
+     * @var \tsingsun\swoole\bootstrap\BootstrapInterface
      */
     public $bootstrap;
     /**

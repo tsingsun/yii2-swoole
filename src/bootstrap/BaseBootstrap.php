@@ -68,6 +68,7 @@ abstract class BaseBootstrap implements BootstrapInterface
      */
     protected function setupEnvironment($request)
     {
+        //websocket时,$request为null
         if($request){
             $_GET = isset($request->get) ? $request->get : [];
             $_POST = isset($request->post) ? $request->post : [];

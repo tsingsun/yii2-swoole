@@ -44,7 +44,7 @@ class HttpServer extends Server
             $response->header('Content-Type', FileHelper::getMimeTypeByExtension($file));
             $response->header('Content-Length', $size);
             //todo sendfile性能可能存在问题，用end来处理小文件。
-            if ($size > 1024 * 1024) {
+            if ($size > 2097152) {
                 //防止swoole warning
                 $response->sendfile($file);
             } elseif ($size == 0) {

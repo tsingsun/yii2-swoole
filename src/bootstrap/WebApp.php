@@ -35,9 +35,12 @@ class WebApp extends BaseBootstrap
 //            $app->task = new Task($coroutine, Yii::$app);
 //            $app->task->run();
 //            return;
-            $yiiRes = Yii::$app->getResponse();
-            if ($yiiRes instanceof Response) {
-                $yiiRes->setSwooleResponse($response);
+            //request response组件需要组合swoole的组件
+            Yii::$app->getResponse()->setSwooleResponse($response);
+//            Yii::$app->getRequest()->setSwooleRequest($request);
+            if (empty($_POST) && Yii::$app->request->isPost
+                && $data = $request->rawContent()) {
+                Yii::$app->getRequest()->setRawBody($data);
             }
             Yii::$app->run();
 
