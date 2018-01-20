@@ -1,28 +1,33 @@
 {
-  "name": "tsingsun/yii2-daemon",
-  "description": "run yii2 in daemon mode",
-  "type": "yii2-extension",
-  "author": [
-    {
-      "name": "liqingshan",
-      "email": "qsli@1ping.com"
+    "name": "tsingsun/yii2-swoole",
+    "description": "run yii2 in swoole coroutine mode",
+    "keywords": [
+        "yii2",
+        "swoole",
+        "coroutine"
+    ],
+    "type": "yii2-extension",
+    "author": [
+        {
+            "name": "liqingshan",
+            "email": "qsli@1ping.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "yiisoft/yii2": "~2.0.12"
+    },
+    "require-dev": {
+        "eaglewu/swoole-ide-helper": "dev-master",
+        "phpunit/phpunit": "^4.8",
+        "yiisoft/yii2-redis": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "tsingsun\\swoole\\": "src"
+        }
+    },
+    "suggest": {
+        "ext-swoole": "install ext-swoole when use php swoole extension"
     }
-  ],
-  "require": {
-    "php": ">=7.0",
-    "yiisoft/yii2": "~2.0.12"
-  },
-  "require-dev": {
-    "eaglewu/swoole-ide-helper": "dev-master",
-    "phpunit/phpunit":"^4.8",
-    "yiisoft/yii2-redis": "^2.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "tsingsun\\swoole\\": "src"
-    }
-  },
-  "suggest":{
-    "ext-swoole":"install ext-swoole when use php swoole extension"
-  }
 }

@@ -37,6 +37,8 @@ abstract class BaseBootstrap implements BootstrapInterface
      */
     protected $workerId;
 
+    protected $container;
+
     public function __construct(Server $server)
     {
         $this->server = $server;
@@ -84,6 +86,8 @@ abstract class BaseBootstrap implements BootstrapInterface
         }
 
         $this->initServerVars();
+        //在进程中保持引用关系,使持久化类不受context->removeCoroutineData影响,而被回收
+        $this->container = new Container();
         Yii::$container = new ContainerDecorator();
         Yii::$context = new Context();
     }

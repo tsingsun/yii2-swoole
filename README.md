@@ -4,26 +4,12 @@
 yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole上的一个方案,除了提高Yii的并发性能外,为YIIer做种服务提供便利.
 简单的说我们可以做什么呢,如WebSocket服务器,定时任务服务器,TCP服务器,大部分服务端应用都可以做,已经不再让PHP仅做前端.
 
-在编写本项目时,同时参考了swoole-yii2这个项目,给了我集成swoole的好思路,感谢!
+目前版本可在协程与非协程环境中运行,但建议开启swoole协程支持以达到最高的性能提升.
 
-## 安装方法
-
-- Pear环境,项目依赖swoole扩展,通过pear包管理工具可以方便的进行安装
-
-        wget http://pear.php.net/go-pear.phar
-        php go-pear.phar
-    
-- swoole
-
-    采用默认安装,也可以结合pecl.php.net上的包名, swoole协程版本为2.0
-
-        pecl install swoole
-        pecl install swoole-2.0.6
-             
-- IDE Helper--dev require
-
-    swoole: [swoole-ide-helper](https://github.com/eaglewu/swoole-ide-helper)   
-
+## 安装
+```php
+    composer require tsingsun\yii2-swoole
+```
 ## 特点
 
 - 在不改变原项目代码的基础上,引用本包,即可以享受swoole + 协程带来的高性能
@@ -31,50 +17,20 @@ yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole�
 
 ## 受限
 
-* swoole的reload机制
-在swoole的reload操作只能载入Worker进程启动后加载的PHP文件,PHPer习惯的热部署变得有一些限制.
-如果采用的是Yii的cli方式进行启动,那在启动前Yii Console相关的库文件将被加载,如果Yii涉及的库更新的话,将不得不将进程kill后再启动,
-这显示对维护人员来说是个灾难.谁也不能保证在kill时,对业务产生怎样的影响.因此在启动前最低限度或者不加载Yii框架是基本的要求.如果采用了Yii的
-控制台命令方式启动,那将加载Yii,如果采用php命令方式启动,将不会加载Yii.
-* 由于swoole的方式是采用常驻内存方式,或者可以理解为Yii中的组件是单例,比如Response,这样的结果导致上下文输出混乱.上一次输出的结果并没有清除,
-影响下一次输出.因此某些组件需要重新改写
-* echo输出受限于stdout,原来想通过重新实现,但发现该语法PHP保护的语言特性,无法重写,echo一直输出至黑屏.只能重写Response.又后找到另一种方式可以控制echo的输出
-```php
-    ob_start()
-    ob_implicit_flush(false);
-    $data = ob_get_clean();
-    
-```
-但该方式还有缺陷,无法平滑支持大文件的输出,因此如果是大文件输出的情况下,需要采用tsingsun\swoole\web\Response,获取方式为;
-```php
-    $response = Yii::$app->getResponse();//不要采用new 方式
-    $response->sendFile($file);
-```
-* 异常捕获
-    * swoole不支持set_exception_handler函数,需要在回调函数顶层进行捕获.
-* 代码控制:sleep/exit/die是需要严格控制的语法,也导致了ErrorHandle需要重写.
-* Component组件的clone方法不复制event与behavior,因此目前只在Application和Response重写了该方法,其他组件暂时不需要
+部分Yii的部分功能由于swoole环境问题,导致在代码开发时产生限制.具体请查阅[限制说明文档](doc/limit.md)
 
 ## 执行流程
 
-1.  服务端代码不依赖YII,这样保证在swoole启动动,进程中的PHP文件不包含有Yii内容.
-2.  在worker进程中创建Application对象,Application对象由各服务器决定采用哪种.
-3.  Server接收请求时,复制worker中的Application对象及其组件.
+1.  服务启动: 服务端代码不依赖YII,这样保证在swoole启动动,进程中的PHP文件不包含有Yii内容.
+2.  workder进程创建: 在worker进程中初始化容器与上下文环境,让container持久化
+3.  onRequest中将创建新的Application对象,通过装饰Application::$app对象来支持协程.
 4.  执行Yii run
 
 ## 改写的组件
 
-为了适应swoole的内存处理机制,不得不对Yii组件的进行改写,改写的原则是最小化,比如异常处理,可以改写ErrorHandle进行处理,但发现改写Response
-也可以达到目标,就只保留必须改写的Response.
+为了适应swoole的内存常驻机制,对Yii的一部分组件的进行了改写,尽量的保持用户不产生额外的代码修改,无感迁移.
 
-* yii\di\Container yii的核心组件容器,重写以针对类读取控制,后期扩展热部署支持
-* yii\web\Application 改变了bootstrap方式,初始化阶段不再运行BootStrapInterface->bootstrap方法.延迟在run方法中,防止一些初始化问题
-* yii\web\Response 替换该组件以使用swoole的输出,可以启用以支持大文件
-* yii\web\ErrorHandle 代码中包含了exit语法,因此需要重写.
-* yii\web\Session 取消初步化注册php关闭,session需要显示在配置文件中声明,才可识别.如果swoole对session的不完全支持,如session_set_cookie_params,session无法写入
-* yii\log\Logger Exception不能被序列化,需要重写log的实现,在日志配置需要注意exportInterval,根据服务器环境设置
-
-> 默认启用了自动组件替换,如果你自己定义了组件,请在启动脚本中初始化Container后,关闭autoReplace
+一些组件的改写说明请参阅[组件改写说明](doc/component_changes.md)
 
 ## 使用方法
 
@@ -125,9 +81,7 @@ php http_server.php stop
 * 启用task时,如果断点于task中,则调试请求会被阻塞
 * 如果出现页面信息输出至控制台,一般是被直接echo了,可跟踪各输出出口.
 
-### 关于协程
-由于Yii::$app这做写法在一般项目中经常被大量使用,通过PHP原生实现的coroutine方式时,对于使用静态变量的Yii,上下文切换没办法保证指向正确,实现的话将需要改进$app的获取方式,
-感觉不是很有必要,因此在目前版本中并未实现协程支持,后期考虑在支持协程的swoole 2.0版本上,利用swoole的协程来实现.
+> 由于swoole2.0与xdebug产生冲突(主要是一些协程的客户端类上),导致无法在IDE中调试,比较好的实践应该是在普通PHP环境下开发好,在swoole环境再测试
 
 ### 联系我
 QQ: 21997272
