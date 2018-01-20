@@ -14,6 +14,17 @@ class Connection extends \yii\db\Connection
 
     protected $errorCount = 0;
     public $maxErrorTimes = 2;
+    /**
+     * @var array pool config
+     */
+    public $poolConfig;
+
+    public $commandClass = 'tsingsun\swoole\db\Command';
+
+    public function init()
+    {
+        parent::init();
+    }
 
     /**
      * @inheritdoc
@@ -62,5 +73,34 @@ class Connection extends \yii\db\Connection
         }
         return false;
     }
+
+    protected function createPdoInstance()
+    {
+        $pdoClass = $this->pdoClass;
+        if ($pdoClass === null) {
+            $pdoClass = 'PDO';
+            $driver = $this->getDriverName();
+            if (isset($driver)) {
+                if($driver === 'mysql'){
+                    $pdoClass = 'tsingsun\swoole\db\mysql\PDO';
+//                    $this->commandClass = 'tsingsun\swoole\db\mysql\Command';
+                } elseif ($driver === 'mssql' || $driver === 'dblib') {
+                    $pdoClass = 'yii\db\mssql\PDO';
+                } elseif ($driver === 'sqlsrv') {
+                    $pdoClass = 'yii\db\mssql\SqlsrvPDO';
+                }
+            }
+        }
+
+        $dsn = $this->dsn;
+        if (strncmp('sqlite:@', $dsn, 8) === 0) {
+            $dsn = 'sqlite:' . \Yii::getAlias(substr($dsn, 7));
+        }
+        if($this->poolConfig){
+            \Yii::$app->getConnectionManager()->poolConfig[md5($dsn)] = $this->poolConfig;
+        }
+        return new $pdoClass($dsn, $this->username, $this->password, $this->attributes);
+    }
+
 
 }

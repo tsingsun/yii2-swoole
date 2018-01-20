@@ -2,15 +2,12 @@
 
 namespace tsingsun\swoole\web;
 
+use tsingsun\swoole\di\ApplicationDecorator;
 use Yii;
 use yii\base\BootstrapInterface;
-use yii\base\InvalidConfigException;
+use yii\base\Component;
 use yii\base\ExitException;
-use yii\base\InvalidRouteException;
-use yii\helpers\Url;
-use tsingsun\swoole\coroutine\Task;
-use yii\web\NotFoundHttpException;
-use yii\web\UrlNormalizerRedirectException;
+use yii\base\InvalidConfigException;
 
 /**
  * 使用该类来替换Yii2的Web Application
@@ -21,21 +18,17 @@ class Application extends \yii\web\Application
 
     private $bootstrapComponents = [];
 
-    /**
-     * @var Task 调度任务
-     */
-    public $task;
-
     public function __construct(array $config = [])
     {
-        parent::__construct($config);
-    }
+        Yii::$app = new ApplicationDecorator();
+        Yii::$context->setApplication($this);
+        static::setInstance($this);
+        $this->state = self::STATE_BEGIN;
 
-    /**
-     * 默认的component组件复制时,不对event,behavior进行复制.需要取消该限制
-     */
-    public function __clone()
-    {
+        $this->preInit($config);
+
+        $this->registerErrorHandler($config);
+        Component::__construct($config);
     }
 
     /**
@@ -156,5 +149,10 @@ class Application extends \yii\web\Application
         } else {
             return $status;
         }
+    }
+
+    public function getConnectionManager()
+    {
+        return Yii::$container->get('tsingsun\swoole\pool\ConnectionManager');
     }
 }

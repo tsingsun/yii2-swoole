@@ -13,4 +13,7 @@ return [
     'enableSchemaCache' => true,
     'schemaCache'=>'schemaCache',
     'schemaCacheDuration'=>0,
+    'poolConfig' => [
+        'maxActive' => 1,
+    ],
 ];

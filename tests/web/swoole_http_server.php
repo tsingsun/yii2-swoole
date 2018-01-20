@@ -8,26 +8,38 @@ use \tsingsun\swoole\server\Server;
  * Time: 上午11:15
  */
 defined('WEBROOT') or define('WEBROOT', __DIR__);
+defined('YII_DEBUG') or define('YII_DEBUG', true);
+defined('YII_ENV') or define('YII_ENV', 'dev');
 
 require(__DIR__ . '/../../vendor/autoload.php');
-$config = require(__DIR__ . '/../config/swoole.php');
+$config = [
+    'class'=>'tsingsun\swoole\server\HttpServer',
+    'setting' => [
+        'daemonize'=>0,
+        'max_coro_num'=>3000,
+//        'reactor_num'=>1,
+        'worker_num'=>1,
+        'task_worker_num'=>1,
+        'pid_file' => __DIR__ . '/../runtime/testHttp.pid',
+        'log_file' => __DIR__.'/../runtime/logs/swoole.log',
+        'debug_mode'=> 1,
+        'user'=>'tsingsun',
+        'group'=>'staff',
+    ],
+];
 
-Server::run($config,function ($nodeConfig){
-    $server = Server::autoCreate($nodeConfig);
+Server::run($config,function (Server $server){
     $starter = new \tsingsun\swoole\bootstrap\WebApp($server);
     //初始化函数独立,为了在启动时,不会加载Yii相关的文件,在库更新时采用reload平滑启动服务器
-    $starter->init = function ($bootstrap) {
-        defined('YII_DEBUG') or define('YII_DEBUG', true);
-        defined('YII_ENV') or define('YII_ENV', 'dev');
-        require(__DIR__ . '/../../vendor/yiisoft/yii2/Yii.php');
+    $starter->init = function (\tsingsun\swoole\bootstrap\BaseBootstrap $bootstrap) {
+        require(__DIR__ . '/../../src/Yii.php');
 
         $config = yii\helpers\ArrayHelper::merge(
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
         Yii::setAlias('@yiiunit/extension/swoole', __DIR__ . '/../');
-        Yii::$container = new \tsingsun\swoole\di\Container();
-        $bootstrap->app = new \tsingsun\swoole\web\Application($config);
+        $bootstrap->appConfig = $config;
     };
     $server->bootstrap = $starter;
     $server->start();

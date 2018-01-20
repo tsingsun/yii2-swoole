@@ -10,8 +10,8 @@ namespace tsingsun\swoole\bootstrap;
 
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
+use tsingsun\swoole\web\Application;
 use tsingsun\swoole\web\ErrorHandler;
-use tsingsun\swoole\web\Response;
 use Yii;
 
 /**
@@ -30,29 +30,21 @@ class WebApp extends BaseBootstrap
     public function handleRequest($request, $response)
     {
         try {
-            //YII对于协程支持有天然缺陷
-//            $coroutine = Yii::$app->run();
-//            $app->task = new Task($coroutine, Yii::$app);
-//            $app->task->run();
-//            return;
-            //request response组件需要组合swoole的组件
-            Yii::$app->getResponse()->setSwooleResponse($response);
-//            Yii::$app->getRequest()->setSwooleRequest($request);
-            if (empty($_POST) && Yii::$app->request->isPost
-                && $data = $request->rawContent()) {
-                Yii::$app->getRequest()->setRawBody($data);
-            }
-            Yii::$app->run();
+            $app = Yii::$app;
+            $app->getRequest()->setSwooleRequest($request);
+            $app->getResponse()->setSwooleResponse($response);
+
+            $app->run();
 
         } catch (\Exception $e) {
-            Yii::$app->getErrorHandler()->handleException($e);
+            $app->getErrorHandler()->handleException($e);
         } catch (\Throwable $e) {
-            $eh = Yii::$app->getErrorHandler();
+            $eh = $app->getErrorHandler();
             if ($eh instanceof ErrorHandler) {
                 $eh->handleFallbackExceptionMessage($e, $e->getPrevious());
             }
         } finally {
-            Yii::$app->trigger(Yii::$app::EVENT_AFTER_RUN);
+            $app->trigger(Application::EVENT_AFTER_RUN);
         }
     }
 

@@ -59,7 +59,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         new $appClass(ArrayHelper::merge($cf, $config));
     }
 
-    protected function mockWebApplication($configs = [], $appClass = '\yii\web\Application')
+    protected function mockWebApplication($configs = [], $appClass = '\tsingsun\swoole\web\Application')
     {
         $cf = ArrayHelper::merge(
             $c1 = require(__DIR__ . '/config/main.php'),

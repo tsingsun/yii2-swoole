@@ -4,28 +4,30 @@
 yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole上的一个方案,除了提高Yii的并发性能外,为YIIer做种服务提供便利.
 简单的说我们可以做什么呢,如WebSocket服务器,定时任务服务器,TCP服务器,大部分服务端应用都可以做,已经不再让PHP仅做前端.
 
-本项目尽量不改变Yii项目源码来实现Yii2在swoole的运行.
-
 在编写本项目时,同时参考了swoole-yii2这个项目,给了我集成swoole的好思路,感谢!
 
 ## 安装方法
 
-* Pear环境,项目依赖swoole扩展,通过pear包管理工具可以方便的进行安装
+- Pear环境,项目依赖swoole扩展,通过pear包管理工具可以方便的进行安装
 
         wget http://pear.php.net/go-pear.phar
         php go-pear.phar
     
-* swoole
+- swoole
 
     采用默认安装,也可以结合pecl.php.net上的包名, swoole协程版本为2.0
 
         pecl install swoole
         pecl install swoole-2.0.6
              
-* IDE Helper--dev require
+- IDE Helper--dev require
 
     swoole: [swoole-ide-helper](https://github.com/eaglewu/swoole-ide-helper)   
 
+## 特点
+
+- 在不改变原项目代码的基础上,引用本包,即可以享受swoole + 协程带来的高性能
+- 本地化mysql链接池 
 
 ## 受限
 

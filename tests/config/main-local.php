@@ -7,13 +7,13 @@
  */
 return [
     'components'=>[
-        'session' => [
-            'class' => 'yii\redis\Session',
-            'redis' => [
-                'hostname'=>'127.0.0.1',
-                'database'=>0,
-            ],
-        ],
+//        'session' => [
+//            'class' => 'yii\redis\Session',
+//            'redis' => [
+//                'hostname'=>'127.0.0.1',
+//                'database'=>0,
+//            ],
+//        ],
         'log' => [
             'targets' => [
                 [

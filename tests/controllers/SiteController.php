@@ -48,7 +48,7 @@ class SiteController extends Controller
 
     public function actionDb()
     {
-        $val = Yii::$app->getDb()->createCommand('select * from new_table')->query();
+        $val = Yii::$app->getDb()->createCommand('select sleep(2)')->query();
         return count($val);
     }
 
@@ -59,6 +59,6 @@ class SiteController extends Controller
 
     public function actionTimeout()
     {
-        yield TaskHelper::taskSleep(40000);
+        return sleep(40);
     }
 }

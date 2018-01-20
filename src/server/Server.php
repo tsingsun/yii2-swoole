@@ -251,7 +251,8 @@ class Server
                 print_r('Server is already running. Please stop it first.'.PHP_EOL);
                 exit;
             }
-            $func($config);
+            $server = Server::autoCreate($config);
+            $func($server);
         }elseif($command == 'stop'){
             if(!empty($masterPid)){
                 posix_kill($masterPid,SIGTERM);

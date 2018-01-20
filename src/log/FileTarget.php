@@ -9,7 +9,10 @@
 namespace tsingsun\swoole\log;
 
 
+use tsingsun\swoole\web\Request;
 use yii\base\InvalidConfigException;
+use yii\helpers\ArrayHelper;
+use yii\helpers\VarDumper;
 
 /**
  * 使用异步的方式来实现日志写入操作
@@ -41,5 +44,26 @@ class FileTarget extends \yii\log\FileTarget
         } else {
             @swoole_async_writefile($this->logFile,$text,null,FILE_APPEND);
         }
+    }
+
+    protected function getContextMessage()
+    {
+        //$context = ArrayHelper::filter($GLOBALS, $this->logVars);
+        /** @var Request $request */
+        $request = \Yii::$app->getRequest();
+        $context = ArrayHelper::filter([
+            '_GET' => $request->getQueryParams(),
+            '_POST' => $request->getBodyParams(),
+            '_SERVER' => $request->swooleRequest->server,
+            '_FILES' => $request->swooleRequest->files,
+            '_COOKIE' => $request->getCookies()->toArray(),
+        ], $this->logVars);
+        $result = [];
+        foreach ($context as $key => $value) {
+            //vardumper有性能问题及导致进程退出,var_export,但都能看
+            //$result[] = "\${$key} = " . VarDumper::dumpAsString($value);
+            $result[] = "\${$key} = " . var_export($value);
+        }
+        return implode("\n", $result);
     }
 }
