@@ -136,6 +136,13 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
     public function renderException($exception)
     {
-        parent::renderException($exception);
+        //可能存在递归问题
+        try {
+            parent::renderException($exception);
+        } catch (\Exception $e) {
+
+        } catch (\Throwable $t) {
+
+        }
     }
 }

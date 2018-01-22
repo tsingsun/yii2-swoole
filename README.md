@@ -34,27 +34,51 @@ yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole�
 
 ## 使用方法
 
-1.  将swoole配置文件放在配置文件夹中
+- swoole启动文件    
+启动文件为服务启动脚本,根据不同的服务类型定制,也可以根据业务来定制,具体请查看运行方式中的各服务器说明.
 ```php
-return [
+use \tsingsun\swoole\server\Server;
+
+defined('WEBROOT') or define('WEBROOT', __DIR__);
+defined('YII_DEBUG') or define('YII_DEBUG', true);
+defined('YII_ENV') or define('YII_ENV', 'dev');
+
+require(__DIR__ . '/../../vendor/autoload.php');
+$config = [
     'class'=>'tsingsun\swoole\server\HttpServer',
     'setting' => [
-    //            'daemonize'=>1,
-        'reactor_num'=>1,
+        'daemonize'=>0,
+        'max_coro_num'=>3000,
+//        'reactor_num'=>1,
         'worker_num'=>1,
-        'pid_file' => __DIR__ . '/testHttp.pid',
+        'task_worker_num'=>1,
+        'pid_file' => __DIR__ . '/../runtime/testHttp.pid',
         'log_file' => __DIR__.'/../runtime/logs/swoole.log',
         'debug_mode'=> 1,
         'user'=>'tsingsun',
         'group'=>'staff',
     ],
 ];
+
+Server::run($config,function (Server $server){
+    $starter = new \tsingsun\swoole\bootstrap\WebApp($server);
+    //初始化函数独立,为了在启动时,不会加载Yii相关的文件,在库更新时采用reload平滑启动服务器
+    $starter->init = function (\tsingsun\swoole\bootstrap\BaseBootstrap $bootstrap) {
+        require(__DIR__ . '/../../src/Yii.php');
+
+        $config = yii\helpers\ArrayHelper::merge(
+            require(__DIR__ . '/../config/main.php'),
+            require(__DIR__ . '/../config/main-local.php')
+        );
+        Yii::setAlias('@yiiunit/extension/swoole', __DIR__ . '/../');
+        $bootstrap->appConfig = $config;
+    };
+    $server->bootstrap = $starter;
+    $server->start();
+});
 ```
-2.  启动文件  
-启动文件为服务启动脚本,根据不同的服务类型定制,也可以根据业务来定制,具体请查看运行方式中的各服务器说明.
 
-3.  cli控制命令 
-
+- cli控制命令  
 Usage: php [startScript] [command]
 
 ```php
@@ -65,7 +89,7 @@ php http_server.php reload
 //关闭
 php http_server.php stop
 ```
-4.  运行方式
+- 运行方式
 
 * [HttpServer](doc/swooleHttpServer.md):把swoole当成http服务器运行.
     
@@ -73,13 +97,12 @@ php http_server.php stop
 实现可以通过controller方式进行websocket服务编写,待补充文档
 * TCP/UDP Server  --TODO
 
-5.  开发调试
-
-* 仍然可用基于集成环境如XAMPP等进行调试
-* 基于swoole,只需要配置PHP环境,可用XDEBUG,如果是PHPSTORM,在Debug配置swoole运行脚本,点下Debug运行即可.
-* 在OnWorkStart断点时，请求会被阻塞
-* 启用task时,如果断点于task中,则调试请求会被阻塞
-* 如果出现页面信息输出至控制台,一般是被直接echo了,可跟踪各输出出口.
+- 开发调试  
+  - 仍然可用基于集成环境如XAMPP等进行调试
+  - 基于swoole,只需要配置PHP环境,可用XDEBUG,如果是PHPSTORM,在Debug配置swoole运行脚本,点下Debug运行即可.
+  - 在OnWorkStart断点时，请求会被阻塞
+  - 启用task时,如果断点于task中,则调试请求会被阻塞
+  - 如果出现页面信息输出至控制台,一般是被直接echo了,可跟踪各输出出口.
 
 > 由于swoole2.0与xdebug产生冲突(主要是一些协程的客户端类上),导致无法在IDE中调试,比较好的实践应该是在普通PHP环境下开发好,在swoole环境再测试
 

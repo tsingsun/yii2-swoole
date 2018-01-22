@@ -9,7 +9,6 @@
 namespace tsingsun\swoole\web;
 
 use Yii;
-use yii\base\InvalidConfigException;
 
 /**
  * Class Session
@@ -24,7 +23,7 @@ class Session extends \yii\web\Session
         parent::init();
 //        register_shutdown_function([$this, 'close']);
         if ($this->getIsActive()) {
-            Yii::warning('Session is already started', __METHOD__);
+            Yii::warning('Session is already started in swoole', __METHOD__);
             $this->updateFlashCounters();
         }
     }

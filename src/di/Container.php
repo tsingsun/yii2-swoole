@@ -24,6 +24,8 @@ class Container extends \yii\di\Container
         'yii\web\ErrorHandler' => 'tsingsun\swoole\web\ErrorHandler',
         'yii\log\Logger' => 'tsingsun\swoole\log\Logger',
         'yii\web\Session' => 'tsingsun\swoole\web\Session',
+        'yii\web\CacheSession' => 'tsingsun\swoole\web\CacheSession',
+        'yii\web\DbSession' => 'tsingsun\swoole\web\DbSession',
         'yii\log\FileTarget' => 'tsingsun\swoole\log\FileTarget',
         'yii\db\Command' => 'tsingsun\swoole\db\Command',
         'yii\db\Connection' => 'tsingsun\swoole\db\Connection',

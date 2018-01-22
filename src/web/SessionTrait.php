@@ -61,12 +61,12 @@ trait SessionTrait
         @session_start();
 
         if ($this->getIsActive()) {
-            Yii::info('Session started', __METHOD__);
+            Yii::info('Session started in swoole', __METHOD__);
             $this->updateFlashCounters();
             $this->setPHPSessionID();
         } else {
             $error = error_get_last();
-            $message = isset($error['message']) ? $error['message'] : 'Failed to start session.';
+            $message = isset($error['message']) ? $error['message'] : 'Failed to start session in swoole.';
             Yii::error($message, __METHOD__);
         }
     }

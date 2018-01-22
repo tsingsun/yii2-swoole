@@ -40,9 +40,9 @@ class PDOStatement extends \PDOStatement
 
     public function execute($input_parameters = null)
     {
-        try{
+        try {
             $this->data = $this->pdo->getClient()->query($this->getRawSql());
-        }finally{
+        } finally {
             $this->pdo->releaseConnect();
         }
         return is_array($this->data);
@@ -109,21 +109,21 @@ class PDOStatement extends \PDOStatement
      */
     public function fetch($fetch_style = null, $cursor_orientation = \PDO::FETCH_ORI_NEXT, $cursor_offset = 0)
     {
-        if(empty($this->data)){
+        if (empty($this->data)) {
             return false;
         }
-        return $this->data[$this->_index++];
+        return $this->data[++$this->_index] ?? false;
     }
 
     public function fetchAll($fetch_style = null, $fetch_argument = null, $ctor_args = array())
     {
-        if(empty($this->data)){
+        if (empty($this->data)) {
             return [];
         }
-        if($fetch_style == PDO::FETCH_COLUMN){
+        if ($fetch_style == PDO::FETCH_COLUMN) {
             $keys = array_keys($this->data);
             $key = array_shift($keys);
-            return ArrayHelper::getColumn($this->data,$key);
+            return ArrayHelper::getColumn($this->data, $key);
         }
         return $this->data;
     }
@@ -135,7 +135,7 @@ class PDOStatement extends \PDOStatement
      */
     public function fetchColumn($column_number = 0)
     {
-        if(empty($this->data)){
+        if (empty($this->data)) {
             return null;
         }
         return array_shift($this->data);

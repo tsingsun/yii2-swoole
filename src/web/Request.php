@@ -66,11 +66,8 @@ class Request extends \yii\web\Request
     {
         if ($this->_headers === null) {
             $this->_headers = new HeaderCollection();
-            foreach ($this->swooleRequest->server as $name => $value) {
-                if (strncmp($name, 'HTTP_', 5) === 0) {
-                    $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
-                    $this->_headers->add($name, $value);
-                }
+            foreach ($this->swooleRequest->header as $name => $value) {
+                $this->_headers->add($name, $value);
             }
         }
         return $this->_headers;

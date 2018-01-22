@@ -131,11 +131,4 @@ class Response extends \yii\web\Response
         }
         $this->swooleResponse->end();
     }
-
-    /**
-     * 默认的component组件复制时,不对event,behavior进行复制.需要取消该限制
-     */
-    public function __clone()
-    {
-    }
 }
