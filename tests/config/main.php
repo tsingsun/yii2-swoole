@@ -40,7 +40,7 @@ $config = [
         ],
         'session' =>[
 //            'class'=> 'tsingsun\swoole\web\Session',
-            'class'=> 'tsingsun\swoole\web\CacheSession',
+            'class'=> 'yii\web\CacheSession',
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',

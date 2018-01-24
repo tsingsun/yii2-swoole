@@ -56,18 +56,15 @@ trait SessionTrait
         if ($this->getIsActive()) {
             return;
         }
-
 //        $this->registerSessionHandler();
-
         $this->setCookieParamsInternal();
 
         @$this->sessionStart();
 //        @session_start();
-
         if ($this->getIsActive()) {
             Yii::info('Session started in swoole', __METHOD__);
             $this->updateFlashCounters();
-            $this->setPHPSessionID();
+            $this->implantSessionId();
         } else {
             $error = error_get_last();
             $message = isset($error['message']) ? $error['message'] : 'Failed to start session in swoole.';
@@ -121,7 +118,10 @@ trait SessionTrait
         $this->_hasSessionId = $value;
     }
 
-    private function setPHPSessionID()
+    /**
+     * 将生成的sessionID发送至客户端
+     */
+    private function implantSessionId()
     {
         if ($this->getHasSessionId() === false) {
             /** @var Response $response */
@@ -134,6 +134,38 @@ trait SessionTrait
                 $response->getSwooleResponse()->cookie($this->getName(), $this->getId());
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function regenerateID($deleteOldSession = false)
+    {
+        if ($this->getIsActive()) {
+            // add @ to inhibit possible warning due to race condition
+            // https://github.com/yiisoft/yii2/pull/1812
+            if (YII_DEBUG && !headers_sent()) {
+                $this->sessionRegenerateId($deleteOldSession);
+            } else {
+                @$this->sessionRegenerateId($deleteOldSession);
+            }
+        }
+    }
+
+    /**
+     * session_regenerate_id的实现
+     * @param $deleteOldSession
+     */
+    protected function sessionRegenerateId($deleteOldSession)
+    {
+        if($deleteOldSession){
+            $this->destroySession($this->getId());
+            $this->closeSession();
+        }
+        $this->_hasSessionId = false;
+        $id = $this->newSessionId();
+        $this->setId($id);
+        $this->implantSessionId();
     }
 
     /**
@@ -327,6 +359,21 @@ trait SessionTrait
     }
 
     /**
+     * 生成新的session Id
+     * @return string
+     */
+    protected function newSessionId()
+    {
+        //7.1,有新的方法
+        if (version_compare(PHP_VERSION, '7.1', '<')) {
+            $sid = md5($_SERVER['REMOTE_ADDR'] . microtime() . rand(0, 100000));
+        } else {
+            $sid = session_create_id();
+        }
+        return $sid;
+    }
+
+    /**
      * 内部实现session_start函数,调用openSession与readSession
      * @param null $option
      */
@@ -337,12 +384,7 @@ trait SessionTrait
         if ($sid) {
             $this->setId($sid);
         } else {
-            //7.1,有新的方法
-            if (version_compare(PHP_VERSION, '7.1', '<')) {
-                $sid = md5($_SERVER['REMOTE_ADDR'] . microtime() . rand(0, 100000));
-            } else {
-                $sid = session_create_id();
-            }
+            $sid = $this->newSessionId();
             $this->setId($sid);
         }
         //TODO 根据GC设置启动GC进程

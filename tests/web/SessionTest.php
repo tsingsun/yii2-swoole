@@ -50,4 +50,13 @@ class SessionTest extends TestCase
         $result = $session->destroy();
         $this->assertNull($result);
     }
+
+    function testRegenerate()
+    {
+        $a = \Yii::$app->request->getSwooleRequest();
+        $a->cookie['PHPSESSID'] = 'ol1aqbgptllbnq8i9jlbp96nc4';
+        $session = \Yii::$app->getSession();
+        $session->set('a','b');
+        $session->regenerateID(false);
+    }
 }

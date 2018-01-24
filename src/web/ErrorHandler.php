@@ -131,20 +131,8 @@ class ErrorHandler extends \yii\web\ErrorHandler
                 if ($this->discardExistingOutput) {
                     $this->clearOutput();
                 }
-                $this->renderException($exception);
+                @$this->renderException($exception);
             }
-
-        }
-    }
-
-    public function renderException($exception)
-    {
-        //可能存在递归问题
-        try {
-            parent::renderException($exception);
-        } catch (\Exception $e) {
-
-        } catch (\Throwable $t) {
 
         }
     }

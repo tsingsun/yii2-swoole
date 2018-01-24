@@ -17,4 +17,6 @@ Yii的session组件相关的如下:
 - yii\redis\Session 采用redis数据库维护session数据
 - yii\mongo\Session 采用mongo数据库维护session数据 **(少用,暂时先不未实现)**
 
-由于在协程环境下,一些超全局变量是不可用的.Session涉及$_cookie,$_session都需要改写
+在协程环境下,session库并不适用,在框架中重新实现了session组件,并可适用于Yii原生组件.
+> session的GC功能暂时未实现,因为GC现只作用于session及dbSession方式中,现更多采用CacheSession或者RedisSession
+
