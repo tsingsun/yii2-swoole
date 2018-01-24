@@ -18,6 +18,12 @@ use yii\base\InvalidParamException;
 trait SessionTrait
 {
     private $_hasSessionId = null;
+
+    private $_isActive = false;
+
+    private $session_id;
+
+    protected $session = [];
     /**
      * @var array parameter-value pairs to override default session cookie parameters that are used for session_set_cookie_params() function
      * Array may have the following possible keys: 'lifetime', 'path', 'domain', 'secure', 'httponly'
@@ -27,13 +33,23 @@ trait SessionTrait
 
     public function close()
     {
-        parent::close();
-        //在session_write_close后,清除当前进程session数据
-        $_SESSION = [];
-        session_abort();
-        $this->setHasSessionId(null);
-        $this->setCookieParams(['httponly' => true]);
+        if ($this->getIsActive()) {
+            YII_DEBUG ? $this->sessionWriteClose() : @$this->sessionWriteClose();
+        }
     }
+
+    public function destroy()
+    {
+        if ($this->getIsActive()) {
+            $this->destroySession($this->getId());
+        }
+    }
+
+    public function getIsActive()
+    {
+        return $this->_isActive;
+    }
+
 
     public function open()
     {
@@ -41,24 +57,12 @@ trait SessionTrait
             return;
         }
 
-        $this->registerSessionHandler();
+//        $this->registerSessionHandler();
 
         $this->setCookieParamsInternal();
-        $sid = $_COOKIE[$this->getName()] ?? null;
-        if ($sid) {
-            $this->setId($sid);
-        } else {
-            //7.1,有新的方法
-            if (version_compare(PHP_VERSION, '7.1', '<')) {
-                $sid = md5($_SERVER['REMOTE_ADDR'] . microtime() . rand(0, 100000));
-            } else {
-                $sid = session_create_id();
-            }
-            $this->setId($sid);
 
-        }
-
-        @session_start();
+        @$this->sessionStart();
+//        @session_start();
 
         if ($this->getIsActive()) {
             Yii::info('Session started in swoole', __METHOD__);
@@ -69,6 +73,52 @@ trait SessionTrait
             $message = isset($error['message']) ? $error['message'] : 'Failed to start session in swoole.';
             Yii::error($message, __METHOD__);
         }
+    }
+
+    public function getId()
+    {
+        return $this->session_id;
+    }
+
+    public function setId($value)
+    {
+        $this->session_id = $value;
+    }
+
+    /**
+     * Returns a value indicating whether the current request has sent the session ID.
+     * The default implementation will check cookie and $_GET using the session name.
+     * If you send session ID via other ways, you may need to override this method
+     * or call [[setHasSessionId()]] to explicitly set whether the session ID is sent.
+     * @return bool whether the current request has sent the session ID.
+     */
+    public function getHasSessionId()
+    {
+        if ($this->_hasSessionId === null) {
+            $name = $this->getName();
+            $request = Yii::$app->getRequest();
+            $cookie = $request->getSwooleRequest()->cookie;
+            if (!empty($cookie[$name]) && ini_get('session.use_cookies')) {
+                $this->_hasSessionId = true;
+            } elseif (!ini_get('session.use_only_cookies') && ini_get('session.use_trans_sid')) {
+                $this->_hasSessionId = $request->get($name) != '';
+            } else {
+                $this->_hasSessionId = false;
+            }
+        }
+
+        return $this->_hasSessionId;
+    }
+
+    /**
+     * Sets the value indicating whether the current request has sent the session ID.
+     * This method is provided so that you can override the default way of determining
+     * whether the session ID is sent.
+     * @param bool $value whether the current request has sent the session ID.
+     */
+    public function setHasSessionId($value)
+    {
+        $this->_hasSessionId = $value;
     }
 
     private function setPHPSessionID()
@@ -100,5 +150,220 @@ trait SessionTrait
         } else {
             throw new InvalidParamException('Please make sure cookieParams contains these elements: lifetime, path, domain, secure and httponly.');
         }
+    }
+
+    public function getCount()
+    {
+        $this->open();
+        return count($this->session);
+    }
+
+    public function get($key, $defaultValue = null)
+    {
+        $this->open();
+        return isset($this->session[$key]) ? $this->session[$key] : $defaultValue;
+    }
+
+    public function set($key, $value)
+    {
+        $this->open();
+        $this->session[$key] = $value;
+    }
+
+    public function remove($key)
+    {
+        $this->open();
+        if (isset($this->session[$key])) {
+            $value = $this->session[$key];
+            unset($this->session[$key]);
+
+            return $value;
+        }
+
+        return null;
+    }
+
+    public function removeAll()
+    {
+        $this->open();
+        foreach (array_keys($this->session) as $key) {
+            unset($this->session[$key]);
+        }
+    }
+
+    public function has($key)
+    {
+        $this->open();
+        return isset($this->session[$key]);
+    }
+
+    protected function updateFlashCounters()
+    {
+        $counters = $this->get($this->flashParam, []);
+        if (is_array($counters)) {
+            foreach ($counters as $key => $count) {
+                if ($count > 0) {
+                    unset($counters[$key], $this->session[$key]);
+                } elseif ($count == 0) {
+                    $counters[$key]++;
+                }
+            }
+            $this->session[$this->flashParam] = $counters;
+        } else {
+            // fix the unexpected problem that flashParam doesn't return an array
+            unset($this->session[$this->flashParam]);
+        }
+    }
+
+    public function getFlash($key, $defaultValue = null, $delete = false)
+    {
+        $counters = $this->get($this->flashParam, []);
+        if (isset($counters[$key])) {
+            $value = $this->get($key, $defaultValue);
+            if ($delete) {
+                $this->removeFlash($key);
+            } elseif ($counters[$key] < 0) {
+                // mark for deletion in the next request
+                $counters[$key] = 1;
+                $this->session[$this->flashParam] = $counters;
+            }
+
+            return $value;
+        }
+
+        return $defaultValue;
+    }
+
+    public function getAllFlashes($delete = false)
+    {
+        $counters = $this->get($this->flashParam, []);
+        $flashes = [];
+        foreach (array_keys($counters) as $key) {
+            if (array_key_exists($key, $this->session)) {
+                $flashes[$key] = $this->session[$key];
+                if ($delete) {
+                    unset($counters[$key], $this->session[$key]);
+                } elseif ($counters[$key] < 0) {
+                    // mark for deletion in the next request
+                    $counters[$key] = 1;
+                }
+            } else {
+                unset($counters[$key]);
+            }
+        }
+
+        $this->session[$this->flashParam] = $counters;
+
+        return $flashes;
+    }
+
+    public function setFlash($key, $value = true, $removeAfterAccess = true)
+    {
+        $counters = $this->get($this->flashParam, []);
+        $counters[$key] = $removeAfterAccess ? -1 : 0;
+        $this->session[$key] = $value;
+        $this->session[$this->flashParam] = $counters;
+    }
+
+    public function addFlash($key, $value = true, $removeAfterAccess = true)
+    {
+        $counters = $this->get($this->flashParam, []);
+        $counters[$key] = $removeAfterAccess ? -1 : 0;
+        $this->session[$this->flashParam] = $counters;
+        if (empty($this->session[$key])) {
+            $this->session[$key] = [$value];
+        } else {
+            if (is_array($this->session[$key])) {
+                $this->session[$key][] = $value;
+            } else {
+                $this->session[$key] = [$this->session[$key], $value];
+            }
+        }
+    }
+
+    public function removeFlash($key)
+    {
+        $counters = $this->get($this->flashParam, []);
+        $value = isset($this->session[$key], $counters[$key]) ? $this->session[$key] : null;
+        unset($counters[$key], $this->session[$key]);
+        $this->session[$this->flashParam] = $counters;
+
+        return $value;
+    }
+
+    public function removeAllFlashes()
+    {
+        $counters = $this->get($this->flashParam, []);
+        foreach (array_keys($counters) as $key) {
+            unset($this->session[$key]);
+        }
+        unset($this->session[$this->flashParam]);
+    }
+
+    public function offsetExists($offset)
+    {
+        $this->open();
+
+        return isset($this->session[$offset]);
+    }
+
+    public function offsetGet($offset)
+    {
+        $this->open();
+
+        return isset($this->session[$offset]) ? $this->session[$offset] : null;
+    }
+
+    public function offsetSet($offset, $item)
+    {
+        $this->open();
+        $this->session[$offset] = $item;
+    }
+
+    public function offsetUnset($offset)
+    {
+        $this->open();
+        unset($this->session[$offset]);
+    }
+
+    /**
+     * 内部实现session_start函数,调用openSession与readSession
+     * @param null $option
+     */
+    public function sessionStart($option = null)
+    {
+        $cookie = Yii::$app->request->getSwooleRequest()->cookie;
+        $sid = $cookie[$this->getName()] ?? $this->session_id;
+        if ($sid) {
+            $this->setId($sid);
+        } else {
+            //7.1,有新的方法
+            if (version_compare(PHP_VERSION, '7.1', '<')) {
+                $sid = md5($_SERVER['REMOTE_ADDR'] . microtime() . rand(0, 100000));
+            } else {
+                $sid = session_create_id();
+            }
+            $this->setId($sid);
+        }
+        //TODO 根据GC设置启动GC进程
+//        parent::openSession(session_save_path(),$this->getId());
+        $data = $this->readSession($this->getId());
+        $this->session = unserialize($data);
+        $this->_isActive = true;
+    }
+
+    /**
+     * 内部实现session_write_close方法,调用writeSession与close
+     * @param string $sessionId
+     * @param string $data
+     */
+    public function sessionWriteClose()
+    {
+        if (!empty($this->session)) {
+            $data = serialize($this->session);
+            $this->writeSession($this->getId(), $data);
+        }
+        $this->closeSession();
+        $this->_isActive = false;
     }
 }

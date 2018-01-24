@@ -108,15 +108,16 @@ class ErrorHandler extends \yii\web\ErrorHandler
         return false;
     }
 
-    public function handleFatalError()
+    public function handleFatalError($show = true)
     {
 //        unset($this->_memoryReserve);
 
         // load ErrorException manually here because autoloading them will not work
         // when error occurs while autoloading a class
-
-        if (!class_exists('yii\\base\\ErrorException', false)) {
-            require_once(\Yii::getAlias('@yii/base/ErrorException.php'));
+        if (!$show) {
+            if (!class_exists('yii\\base\\ErrorException', false)) {
+                require_once(\Yii::getAlias('@yii/base/ErrorException.php'));
+            }
         }
 
         $error = error_get_last();
@@ -126,11 +127,13 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $this->exception = $exception;
 
             $this->logException($exception);
-
-            if ($this->discardExistingOutput) {
-                $this->clearOutput();
+            if ($show) {
+                if ($this->discardExistingOutput) {
+                    $this->clearOutput();
+                }
+                $this->renderException($exception);
             }
-            $this->renderException($exception);
+
         }
     }
 

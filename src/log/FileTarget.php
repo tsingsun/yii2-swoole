@@ -48,15 +48,17 @@ class FileTarget extends \yii\log\FileTarget
 
     protected function getContextMessage()
     {
-        //$context = ArrayHelper::filter($GLOBALS, $this->logVars);
+        if(empty($this->logVars)){
+            return '';
+        }
         /** @var Request $request */
         $request = \Yii::$app->getRequest();
         $context = ArrayHelper::filter([
-            '_GET' => $request->getQueryParams(),
-            '_POST' => $request->getBodyParams(),
+            '_GET' => $request->isGet ? $request->getQueryParams() : [],
+            '_POST' => !$request->isGet ? $request->getBodyParams() : [],
             '_SERVER' => $request->swooleRequest->server,
             '_FILES' => $request->swooleRequest->files,
-            '_COOKIE' => $request->getCookies()->toArray(),
+            '_COOKIE' => $request->swooleRequest->cookie,
         ], $this->logVars);
         $result = [];
         foreach ($context as $key => $value) {
@@ -64,6 +66,6 @@ class FileTarget extends \yii\log\FileTarget
             //$result[] = "\${$key} = " . VarDumper::dumpAsString($value);
             $result[] = "\${$key} = " . var_export($value);
         }
-        return implode("\n", $result);
+        return implode("\n\n", $result);
     }
 }

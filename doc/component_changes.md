@@ -16,3 +16,5 @@ Yii的session组件相关的如下:
 - yii\web\DbSession 采用Db组件维护session数据
 - yii\redis\Session 采用redis数据库维护session数据
 - yii\mongo\Session 采用mongo数据库维护session数据 **(少用,暂时先不未实现)**
+
+由于在协程环境下,一些超全局变量是不可用的.Session涉及$_cookie,$_session都需要改写

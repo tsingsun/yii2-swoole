@@ -39,7 +39,7 @@ abstract class BaseBootstrap implements BootstrapInterface
 
     protected $container;
 
-    public function __construct(Server $server)
+    public function __construct(Server $server = null)
     {
         $this->server = $server;
         $this->init();
@@ -47,6 +47,11 @@ abstract class BaseBootstrap implements BootstrapInterface
 
     public function init()
     {
+    }
+
+    public function getServer()
+    {
+        return $this->server;
     }
 
     /**
@@ -65,9 +70,10 @@ abstract class BaseBootstrap implements BootstrapInterface
     protected function initRequest($request)
     {
         //websocket时,$request为null
-        if($request){
+        if ($request) {
             $request->get = isset($request->get) ? $request->get : [];
             $request->post = isset($request->post) ? $request->post : [];
+            $request->header = isset($request->header) ? $request->header : [];
             $request->cookie = isset($request->cookie) ? $request->cookie : [];
             $request->files = isset($request->files) ? $request->files : [];
             $request->server = isset($request->server) ? $request->server : [];
@@ -77,7 +83,7 @@ abstract class BaseBootstrap implements BootstrapInterface
         }
     }
 
-    public function onWorkerStart(\Swoole\Server $server, $worker_id)
+    public function onWorkerStart($server, $worker_id)
     {
         $this->workerId = $worker_id;
         $initFunc = $this->init;
@@ -97,23 +103,25 @@ abstract class BaseBootstrap implements BootstrapInterface
      */
     public function onRequest($request, $response)
     {
-        try{
+        try {
             $this->initRequest($request);
             //每次都初始化容器,以做协程隔离
             Yii::$context->setContainer(new Container());
             $app = new Application($this->appConfig);
-            $app->on(Application::EVENT_BEFORE_REQUEST,[$this,'onBeforeRequest']);
-            $app->on(Application::EVENT_AFTER_RUN,[$this,'onRequestEnd']);
-            return $this->handleRequest($request,$response);
-        }catch (\Throwable $throwable){
+            $app->on(Application::EVENT_BEFORE_REQUEST, [$this, 'onBeforeRequest']);
+            $app->on(Application::EVENT_AFTER_RUN, [$this, 'onRequestEnd']);
+            return $this->handleRequest($request, $response);
+        } catch (\Throwable $throwable) {
             //handleRequest要求做导常处理,到外层已经很少了.
             throw $throwable;
-        } finally{
+        } finally {
             Yii::$context->removeCurrentCoroutineData();
         }
     }
 
-    public function onBeforeRequest(Event $event){}
+    public function onBeforeRequest(Event $event)
+    {
+    }
 
     /**
      * @inheritdoc
@@ -133,7 +141,7 @@ abstract class BaseBootstrap implements BootstrapInterface
     }
 
 
-    public function onTask(\Swoole\Server $serv, int $task_id, int $src_worker_id, $data)
+    public function onTask($server, $taskId, $srcWorkerId, $data)
     {
         $func = array_shift($data);
         if (is_callable($func)) {
@@ -143,7 +151,7 @@ abstract class BaseBootstrap implements BootstrapInterface
         return 1;
     }
 
-    public function onFinish(\Swoole\Server $serv, int $task_id, string $data)
+    public function onFinish($server, $taskId, $data)
     {
         //echo $data;
     }
@@ -152,7 +160,7 @@ abstract class BaseBootstrap implements BootstrapInterface
      * @param \Swoole\Server $server
      * @param $worker_id
      */
-    public function onWorkerStop(\Swoole\Server $server, $worker_id)
+    public function onWorkerStop($server, $worker_id)
     {
         if (!$server->taskworker) {
             Yii::getLogger()->flush(true);
@@ -166,7 +174,7 @@ abstract class BaseBootstrap implements BootstrapInterface
     {
         //使application运行时不会报错
         $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['DOCUMENT_URI'] = $this->index;
-        $_SERVER['SCRIPT_FILENAME'] = $this->server->root . $this->index;
+        $_SERVER['SCRIPT_FILENAME'] = ($this->server ? $this->server->root : '') . $this->index;
 
         $_SERVER['WORKER_ID'] = $this->workerId;
     }

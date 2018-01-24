@@ -20,11 +20,7 @@ return [
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'swooleunit\controllers',
-    'controllerMap' => [
-        'swoole'=>[
-            'class'=> 'tsingsun\swoole\controllers\SwooleController'
-        ],
-    ],
+    'controllerMap' => [],
     'components' => [
         'log' => [
             'targets' => [

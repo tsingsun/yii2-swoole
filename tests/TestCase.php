@@ -2,6 +2,10 @@
 
 namespace yiiunit\extension\swoole;
 
+use tsingsun\swoole\bootstrap\BaseBootstrap;
+use tsingsun\swoole\server\HttpServer;
+use tsingsun\swoole\server\Server;
+use tsingsun\swoole\web\Application;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -12,6 +16,8 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected $loop;
 
     public static $params;
+    /** @var BaseBootstrap */
+    public $starter;
 
     /**
      * Clean up after test.
@@ -38,13 +44,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         return isset(static::$params[$name]) ? static::$params[$name] : $default;
     }
 
-    /**
-     * Populates Yii::$app with a new application
-     * The application will be destroyed on tearDown() automatically.
-     * @param array $config The application configuration, if needed
-     * @param string $appClass name of the application class to create
-     */
-    protected function mockApplication($config = [], $appClass = '\yii\console\Application')
+    protected function mockApplication($config = [], $appClass = 'tsingsun\swoole\bootstrap\WebApp')
     {
         $cf = ArrayHelper::merge(
             $c1 = require(__DIR__ . '/config/console.php'),
@@ -53,62 +53,73 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
         new $appClass(ArrayHelper::merge([
             'id' => 'testapp',
-            'basePath' => __DIR__.'/../',
+            'basePath' => __DIR__ . '/../',
             'vendorPath' => $this->getVendorPath(),
         ], $config));
         new $appClass(ArrayHelper::merge($cf, $config));
     }
 
-    protected function mockWebApplication($configs = [], $appClass = '\tsingsun\swoole\web\Application')
+    protected function mockWebApplication($configs = [], $appClass = 'tsingsun\swoole\bootstrap\WebApp')
     {
         $cf = ArrayHelper::merge(
             $c1 = require(__DIR__ . '/config/main.php'),
             $c2 = require(__DIR__ . '/config/main-local.php')
         );
-        foreach($cf['bootstrap'] as $key=>$item){
-            if($item == 'log1' || $item == 'debug'){
+        foreach ($cf['bootstrap'] as $key => $item) {
+            if ($item == 'log1' || $item == 'debug') {
                 unset($cf['bootstrap'][$key]);
             }
         }
         unset($cf['modules']['debug']);
         $cf['components']['log'] = [
-            'targets'=>[
+            'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
-                    'maxFileSize'=> 200,
+                    'maxFileSize' => 200,
                     'levels' => ['trace'],
                     'logVars' => [],
-                    'logFile' => '@runtime/logs/'.date('ymd').'.log',
+                    'logFile' => '@runtime/logs/' . date('ymd') . '.log',
                 ],
             ],
         ];
-//        unset($cf['modules']['debug']);
-        new $appClass(ArrayHelper::merge($cf, [
-            'id' => 'testapp',
-            'vendorPath' => $this->getVendorPath(),
-            'components' => [
-                'request' => [
-                    'cookieValidationKey' => 'wefJDF8sfdsfSDefwqdxj9oq',
-                    'scriptFile' => __DIR__ .'/../web/index.php',
-                    'scriptUrl' => '/index.php',
-                ],
-                'messenger' => [
-                    'class'=>'app\modules\message\Messenger',
-                    'channels'=>[
-                        'sms'=>[
-                            'class'=>'app\modules\message\provider\QCloudSms',
-                            'appId'=>'1400002656',
-                            'appKey'=>'330b875d63666915cdd1a01d6d530ef6'
-                        ],
+        $swoole = require(__DIR__ . '/config/swoole.php');
+        $this->starter = new $appClass();
+        $this->starter->appConfig =
+            ArrayHelper::merge($cf, [
+                'id' => 'testapp',
+                'vendorPath' => $this->getVendorPath(),
+                'components' => [
+                    'request' => [
+                        'cookieValidationKey' => 'wefJDF8sfdsfSDefwqdxj9oq',
+                        'scriptFile' => __DIR__ . '/../web/index.php',
+                        'scriptUrl' => '/index.php',
                     ],
+                    'messenger' => [
+                        'class' => 'app\modules\message\Messenger',
+                        'channels' => [
+                            'sms' => [
+                                'class' => 'app\modules\message\provider\QCloudSms',
+                                'appId' => '1400002656',
+                                'appKey' => '330b875d63666915cdd1a01d6d530ef6'
+                            ],
+                        ],
+                    ]
                 ]
-            ]
-        ],$configs));
+            ], $configs);
         $this->setCurrentUser();
+        \Yii::setAlias('@yiiunit/extension/swoole', __DIR__ . '/');
+        $this->starter->onWorkerStart(null,1);
+        new Application($this->starter->appConfig);
+        $request = new \swoole_http_request();
+        $request->header = $request->get = $request->post = $request->files = $request->cookie = [];
+        $response = new \swoole_http_response();
+        \Yii::$app->request->setSwooleRequest($request);
+        \Yii::$app->response->setSwooleResponse($response);
     }
 
-    protected function setCurrentUser(){
-        \Yii::$app->user->setIdentity(new TestIdentity());
+    protected function setCurrentUser()
+    {
+//        \Yii::$app->user->setIdentity(new TestIdentity());
     }
 
     protected function getVendorPath()

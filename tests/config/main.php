@@ -39,7 +39,8 @@ $config = [
             'class'=>'tsingsun\swoole\web\Response'
         ],
         'session' =>[
-            'class'=> 'tsingsun\swoole\web\Session',
+//            'class'=> 'tsingsun\swoole\web\Session',
+            'class'=> 'tsingsun\swoole\web\CacheSession',
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',

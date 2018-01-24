@@ -17,18 +17,21 @@ yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole�
 
 ## 受限
 
-部分Yii的部分功能由于swoole环境问题,导致在代码开发时产生限制.具体请查阅[限制说明文档](doc/limit.md)
+部分Yii的功能在swoole环境,在代码开发时产生限制.具体请查阅[限制说明文档](doc/limit.md)  
+在协程环境下与xdebug产生冲突,导致无法断点只能用log查问题,希望swoole能在调试便利性上下功能.
 
 ## 执行流程
 
 1.  服务启动: 服务端代码不依赖YII,这样保证在swoole启动动,进程中的PHP文件不包含有Yii内容.
-2.  workder进程创建: 在worker进程中初始化容器与上下文环境,让container持久化
+2.  workder进程创建: 在worker进程中初始化DI容器与上下文环境,让container持久化
 3.  onRequest中将创建新的Application对象,通过装饰Application::$app对象来支持协程.
-4.  执行Yii run
+4.  新创建的Application对象将变成上下文容器,通过执行run方法响应客户端.
+5.  销毁Application对象,Application对象生命周期结束.
 
 ## 改写的组件
 
-为了适应swoole的内存常驻机制,对Yii的一部分组件的进行了改写,尽量的保持用户不产生额外的代码修改,无感迁移.
+为了适应swoole的内存常驻机制,对Yii的一部分组件的进行了改写,尽量的保持用户不产生额外的代码修改,无感迁移.  
+在协程环境下,对各类组件需要区分哪些是上下文组件,哪些可以做为全局组件.
 
 一些组件的改写说明请参阅[组件改写说明](doc/component_changes.md)
 
