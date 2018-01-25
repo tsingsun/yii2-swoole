@@ -20,6 +20,9 @@ use tsingsun\swoole\pool\DbPool;
 class PDO extends \PDO
 {
     private $poolKey;
+
+    private $dsn;
+
     private $config;
     /**
      * @var Mysql
@@ -30,14 +33,14 @@ class PDO extends \PDO
 
     public function __construct($dsn, $username, $passwd, $options)
     {
-        $this->poolKey = md5($dsn);
+        $this->dsn = $dsn;
         $this->config = self::parseDsn($dsn, ['host', 'port', 'dbname', 'charset']);
-
         $this->config['database'] = $this->config['dbname'];
         unset($this->config['dbname']);
         $this->config['user'] = $username;
         $this->config['password'] = $passwd;
         $this->options = $options;
+        $this->poolKey = $this->buildPoolKey();
     }
 
     public function prepare($statement, $driver_options = null)
@@ -94,6 +97,8 @@ class PDO extends \PDO
             $this->client = $this->getConnectionFromPool();
         }
         if ($this->client->connected === false) {
+            $token = 'Opening DB connection: ' . $this->dsn;
+            \Yii::info($token,__METHOD__);
             $this->client->connect($this->config);
         }
         return $this->client;
@@ -222,6 +227,14 @@ class PDO extends \PDO
             $cm->addPool($this->poolKey, $dbPool);
         }
         return $cm->get($this->poolKey);
+    }
+
+    protected function buildPoolKey()
+    {
+        if($this->poolKey){
+            $this->poolKey = md5($this->dsn);
+        }
+        return $this->poolKey;
     }
 
 }

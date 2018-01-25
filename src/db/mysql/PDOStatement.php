@@ -121,8 +121,7 @@ class PDOStatement extends \PDOStatement
             return [];
         }
         if ($fetch_style == PDO::FETCH_COLUMN) {
-            $keys = array_keys($this->data);
-            $key = array_shift($keys);
+            $key = key($this->data[0]);
             return ArrayHelper::getColumn($this->data, $key);
         }
         return $this->data;
@@ -138,7 +137,8 @@ class PDOStatement extends \PDOStatement
         if (empty($this->data)) {
             return null;
         }
-        return array_shift($this->data);
+        $data = $this->data[++$this->_index];
+        return current(array_slice($data,$column_number,1));
     }
 
 

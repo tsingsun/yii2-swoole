@@ -8,6 +8,8 @@
 
 namespace tsingsun\swoole\db;
 
+use yii\base\InvalidConfigException;
+use yii\db\Exception;
 
 class Connection extends \yii\db\Connection
 {
@@ -97,6 +99,37 @@ class Connection extends \yii\db\Connection
             $dsn = 'sqlite:' . \Yii::getAlias(substr($dsn, 7));
         }
         return new $pdoClass($dsn, $this->username, $this->password, $this->attributes);
+    }
+
+    public function open()
+    {
+        if ($this->pdo !== null) {
+            return;
+        }
+
+        if (!empty($this->masters)) {
+            $db = $this->getMaster();
+            if ($db !== null) {
+                $this->pdo = $db->pdo;
+                return;
+            }
+
+            throw new InvalidConfigException('None of the master DB servers is available.');
+        }
+
+        if (empty($this->dsn)) {
+            throw new InvalidConfigException('Connection::dsn cannot be empty.');
+        }
+
+        try {
+
+            $this->pdo = $this->createPdoInstance();
+
+            $this->initConnection();
+
+        } catch (\PDOException $e) {
+            throw new Exception($e->getMessage(), $e->errorInfo, (int) $e->getCode(), $e);
+        }
     }
 
 
