@@ -12,18 +12,22 @@ use yii\base\Component;
 use yii\base\InvalidParamException;
 
 /**
- * 链接管理
+ * 连接池管理门面
  * @package tsingsun\swoole\pool
  */
 class ConnectionManager extends Component
 {
     public $poolConfig = [];
     /**
-     * 链接池
+     * 连接池
      * @var ConnectionPool[]
      */
     protected static $poolMap = [];
 
+    /**
+     * @param $connectionKey
+     * @return null|object
+     */
     public function get($connectionKey)
     {
         if(isset(self::$poolMap[$connectionKey])){
@@ -37,6 +41,14 @@ class ConnectionManager extends Component
 
         $conn = $pool->getConnect();
         return $conn;
+    }
+
+    public function getPool($poolKey)
+    {
+        if(!$this->hasPool($poolKey)){
+            return null;
+        }
+        return self::$poolMap[$poolKey];
     }
 
     public function hasPool($poolKey)

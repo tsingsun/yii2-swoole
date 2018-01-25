@@ -35,7 +35,9 @@ class Logger extends \yii\log\Logger
             $ts = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             array_pop($ts); // remove the last trace since it would be the entry script, not very useful
             foreach ($ts as $trace) {
-                if (isset($trace['file'], $trace['line']) && strpos($trace['file'], YII2_PATH) !== 0 && strpos($trace['file'], YII2_SWOOLE_PATH) !== 0) {
+                if (isset($trace['file'], $trace['line'])
+                    && strpos($trace['file'], YII2_PATH) !== 0
+                    && strpos($trace['file'], YII2_SWOOLE_PATH) !== 0) {
                     //cli remove start script
                     if(isset($trace['class']) && $trace['class']=='tsingsun\swoole\server\Server'){
                         break;

@@ -13,7 +13,7 @@ yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole�
 ## 特点
 
 - 在不改变原项目代码的基础上,引用本包,即可以享受swoole + 协程带来的高性能
-- 本地化mysql链接池 
+- 本地化mysql,redis连接池 
 
 ## 受限
 
@@ -110,4 +110,6 @@ php http_server.php stop
 > 由于swoole2.0与xdebug产生冲突(主要是一些协程的客户端类上),导致无法在IDE中调试,比较好的实践应该是在普通PHP环境下开发好,在swoole环境再测试
 
 ### 联系我
-QQ: 21997272
+QQ: 21997272  
+如果你觉得对您有帮助,欢迎红包鼓励^_^
+![支付宝](doc/images/a6x00263kcgmmg3ayg4qb8e.png)

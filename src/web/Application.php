@@ -153,6 +153,16 @@ class Application extends \yii\web\Application
 
     public function getConnectionManager()
     {
-        return Yii::$container->get('tsingsun\swoole\pool\ConnectionManager');
+        return $this->get('connectionManager');
     }
+    /**
+     * @inheritdoc
+     */
+    public function coreComponents()
+    {
+        return array_merge(parent::coreComponents(), [
+            'connectionManager' => ['class' => 'tsingsun\swoole\pool\ConnectionManager'],
+        ]);
+    }
+
 }

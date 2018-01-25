@@ -15,9 +15,9 @@ class Connection extends \yii\db\Connection
     protected $errorCount = 0;
     public $maxErrorTimes = 2;
     /**
-     * @var array pool config
+     * @var array pool config key in connectionManager
      */
-    public $poolConfig;
+    public $poolKey;
 
     public $commandClass = 'tsingsun\swoole\db\Command';
 
@@ -95,9 +95,6 @@ class Connection extends \yii\db\Connection
         $dsn = $this->dsn;
         if (strncmp('sqlite:@', $dsn, 8) === 0) {
             $dsn = 'sqlite:' . \Yii::getAlias(substr($dsn, 7));
-        }
-        if($this->poolConfig){
-            \Yii::$app->getConnectionManager()->poolConfig[md5($dsn)] = $this->poolConfig;
         }
         return new $pdoClass($dsn, $this->username, $this->password, $this->attributes);
     }

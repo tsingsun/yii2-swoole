@@ -31,7 +31,7 @@ class PDO extends \PDO
     public function __construct($dsn, $username, $passwd, $options)
     {
         $this->poolKey = md5($dsn);
-        $this->config = self::parseDsn($dsn,['host', 'port', 'dbname', 'charset']);
+        $this->config = self::parseDsn($dsn, ['host', 'port', 'dbname', 'charset']);
 
         $this->config['database'] = $this->config['dbname'];
         unset($this->config['dbname']);
@@ -69,8 +69,8 @@ class PDO extends \PDO
                 $val = [];
                 foreach (explode(';', $vars) as $var) {
                     $param = explode('=', $var, 2);
-                    if($param[0] === 'host' && $pos = strpos($param[1], ':')){
-                        list($host,$port) = explode(':',$param[1]);
+                    if ($param[0] === 'host' && $pos = strpos($param[1], ':')) {
+                        list($host, $port) = explode(':', $param[1]);
                         $val['host'] = $host;
                         $val['port'] = $port;
                     } else {
@@ -90,10 +90,10 @@ class PDO extends \PDO
 
     public function getClient()
     {
-        if($this->client === null){
+        if ($this->client === null) {
             $this->client = $this->getConnectionFromPool();
         }
-        if($this->client->connected === false){
+        if ($this->client->connected === false) {
             $this->client->connect($this->config);
         }
         return $this->client;
@@ -111,6 +111,14 @@ class PDO extends \PDO
         return true;
     }
 
+    public function getAttribute($attribute)
+    {
+        if ($attribute == PDO::ATTR_CASE) {
+            return PDO::CASE_NATURAL;
+        }
+        return $this->options[$attribute] ?? null;
+    }
+
     /**
      * @inheritdoc
      */
@@ -121,6 +129,7 @@ class PDO extends \PDO
         }
         return "'" . str_replace("'", "''", $string) . "'";
     }
+
     /**
      * @inheritdoc
      */
@@ -128,6 +137,7 @@ class PDO extends \PDO
     {
         return $this->getClient()->query($statement);
     }
+
     /**
      * @inheritdoc
      */
@@ -135,42 +145,45 @@ class PDO extends \PDO
     {
         return $this->getClient()->insert_id;
     }
+
     /**
      * @inheritdoc
      */
     public function beginTransaction()
     {
-        if(!$this->getClient()->query("begin;")){
+        if (!$this->getClient()->query("begin;")) {
             return false;
         }
         return (string)$this->getClient()->sock;
     }
+
     /**
      * @inheritdoc
      */
     public function commit()
     {
         $res = false;
-        try{
+        try {
             $res = $this->getClient()->query("commit;");
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             throw $exception;
-        }finally{
+        } finally {
             $this->releaseConnect();
         }
         return $res;
     }
+
     /**
      * @inheritdoc
      */
     public function rollBack()
     {
         $res = false;
-        try{
+        try {
             $res = $this->getClient()->query("rollback;");
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             throw $exception;
-        }finally{
+        } finally {
             $this->releaseConnect();
         }
         return $res;
@@ -184,8 +197,8 @@ class PDO extends \PDO
     public function releaseConnect()
     {
         /** @var ConnectionManager $cm */
-        $cm = \Yii::$container->get('tsingsun\swoole\pool\ConnectionManager');
-        $cm->releaseConnection($this->poolKey,$this->getClient());
+        $cm = \Yii::$app->getConnectionManager();
+        $cm->releaseConnection($this->poolKey, $this->client);
         $this->client = null;
     }
 
@@ -197,18 +210,18 @@ class PDO extends \PDO
     {
         /** @var ConnectionManager $cm */
         $cm = \Yii::$app->getConnectionManager();
-        if(!$cm->hasPool($this->poolKey)){
-            $pc = $cm->poolConfig[$this->poolKey] ?? [];
+        if (!$cm->hasPool($this->poolKey)) {
+            $pc = $cm->poolConfig['mysql'] ?? [];
             $dbPool = new DbPool($pc);
-            $config = $this->config;
-            $dbPool->createHandle = function ()use($config){
+//            $config = $this->config;
+            $dbPool->createHandle = function () {
                 $client = new Mysql();
+                \Yii::trace('create new mysql connection', __METHOD__);
                 return $client;
             };
-            $cm->addPool($this->poolKey,$dbPool);
+            $cm->addPool($this->poolKey, $dbPool);
         }
         return $cm->get($this->poolKey);
     }
-
 
 }
