@@ -18,7 +18,11 @@ yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole�
 ## 受限
 
 部分Yii的功能在swoole环境,在代码开发时产生限制.具体请查阅[限制说明文档](doc/limit.md)  
-在协程环境下与xdebug产生冲突,导致无法断点只能用log查问题,希望swoole能在调试便利性上下功能.
+
+请仔细理解[swoole的编程需知](https://wiki.swoole.com/wiki/page/851.html),请求无影响大部分来源于此.     
+对于第三方包的call_user_func或call_user_func_array的处理请参考functionReplace.php的处理
+
+别外在协程环境下与xdebug产生冲突,导致无法断点只能用log查问题,希望swoole能在调试便利性上下功能.
 
 ## 执行流程
 

@@ -77,6 +77,8 @@ final class Context
     public function removeCurrentCoroutineData()
     {
         $id = self::getCoroutineId();
+        //只是unset的话,存在内存泄漏或回收过慢问题
+        self::$coroutineData[$id] = null;
         unset(self::$coroutineData[$id]);
     }
 

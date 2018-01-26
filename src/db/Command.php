@@ -268,7 +268,7 @@ class Command extends \yii\db\Command
                 if ($fetchMode === null) {
                     $fetchMode = $this->fetchMode;
                 }
-                $result = call_user_func_array([$this->pdoStatement, $method], (array) $fetchMode);
+                $result = $this->pdoStatement->$method($fetchMode);
                 $this->pdoStatement->closeCursor();
             }
             YII_DEBUG && Yii::endProfile($token, 'yii\db\Command::query');

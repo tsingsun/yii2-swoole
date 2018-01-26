@@ -38,7 +38,7 @@ class ApplicationDecorator
     public function __call($name, $arguments)
     {
         $application = $this->getApplication();
-        return call_user_func_array([$application, $name], $arguments);
+        return $application->$name(...$arguments);
     }
 
     /**

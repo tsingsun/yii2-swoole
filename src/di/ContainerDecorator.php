@@ -25,13 +25,14 @@ class ContainerDecorator
     function __call($name, $arguments)
     {
         $container = $this->getContainer();
-        return call_user_func_array([$container,$name],$arguments);
+        return $container->$name(...$arguments);
     }
 
     /**
      * @return Container
      */
-    protected function getContainer(){
+    protected function getContainer()
+    {
         return Yii::$context->getContainer();
     }
 }
