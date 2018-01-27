@@ -13,10 +13,7 @@ use tsingsun\swoole\di\Container;
 use tsingsun\swoole\di\ContainerDecorator;
 use tsingsun\swoole\di\Context;
 use tsingsun\swoole\server\Server;
-use tsingsun\swoole\web\Application;
 use Yii;
-use yii\base\Event;
-use yii\web\HttpException;
 
 abstract class BaseBootstrap implements BootstrapInterface
 {
@@ -36,8 +33,10 @@ abstract class BaseBootstrap implements BootstrapInterface
      * @var int worker线程的ID
      */
     protected $workerId;
-
-    protected $container;
+    /**
+     * @var Container
+     */
+    protected static $container;
 
     public function __construct(Server $server = null)
     {
@@ -47,6 +46,11 @@ abstract class BaseBootstrap implements BootstrapInterface
 
     public function init()
     {
+    }
+
+    public static function getContainer()
+    {
+        return static::$container;
     }
 
     public function getServer()
@@ -93,7 +97,7 @@ abstract class BaseBootstrap implements BootstrapInterface
 
         $this->initServerVars();
         //在进程中保持引用关系,使持久化类不受context->removeCoroutineData影响,而被回收
-        $this->container = new Container();
+        self::$container = new Container();
         Yii::$container = new ContainerDecorator();
         Yii::$context = new Context();
     }
@@ -107,20 +111,15 @@ abstract class BaseBootstrap implements BootstrapInterface
             $this->initRequest($request);
             //每次都初始化容器,以做协程隔离
             Yii::$context->setContainer(new Container());
-            $app = new Application($this->appConfig);
-            $app->on(Application::EVENT_BEFORE_REQUEST, [$this, 'onBeforeRequest']);
-            $app->on(Application::EVENT_AFTER_RUN, [$this, 'onRequestEnd']);
             return $this->handleRequest($request, $response);
         } catch (\Throwable $throwable) {
             //handleRequest要求做导常处理,到外层已经很少了.
             throw $throwable;
         } finally {
+            $this->onRequestEnd();
             Yii::$context->removeCurrentCoroutineData();
         }
-    }
 
-    public function onBeforeRequest(Event $event)
-    {
     }
 
     /**
@@ -128,11 +127,8 @@ abstract class BaseBootstrap implements BootstrapInterface
      */
     public function onRequestEnd()
     {
-        if (Yii::$app->has('session', true)) {
-            Yii::$app->getSession()->close();
-        }
         $logger = Yii::getLogger();
-        $logger->flush(true);
+        $logger->flush();
     }
 
     public function onWorkerError($swooleServer, $workerId, $workerPid, $exitCode, $sigNo)
@@ -162,9 +158,8 @@ abstract class BaseBootstrap implements BootstrapInterface
      */
     public function onWorkerStop($server, $worker_id)
     {
-        if (!$server->taskworker) {
-            Yii::getLogger()->flush(true);
-        }
+        $logger = Yii::getLogger();
+        $logger->flush(true);
     }
 
     /**

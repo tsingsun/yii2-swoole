@@ -18,6 +18,8 @@ use yii\base\ExitException;
  */
 class ErrorHandler extends \yii\web\ErrorHandler
 {
+    //不需要预先分配内存了
+    public $memoryReserveSize = 0;
 
     public function handleException($exception)
     {
@@ -108,13 +110,17 @@ class ErrorHandler extends \yii\web\ErrorHandler
         return false;
     }
 
-    public function handleFatalError($show = true)
+    /**
+     * 重写基类的,本方法在swoole进程异常退出时触发.
+     * @param bool $isShow
+     */
+    public function handleFatalError($isShow = false)
     {
 //        unset($this->_memoryReserve);
 
         // load ErrorException manually here because autoloading them will not work
         // when error occurs while autoloading a class
-        if (!$show) {
+        if($isShow){
             if (!class_exists('yii\\base\\ErrorException', false)) {
                 require_once(\Yii::getAlias('@yii/base/ErrorException.php'));
             }
@@ -127,7 +133,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $this->exception = $exception;
 
             $this->logException($exception);
-            if ($show) {
+            if($isShow){
                 if ($this->discardExistingOutput) {
                     $this->clearOutput();
                 }

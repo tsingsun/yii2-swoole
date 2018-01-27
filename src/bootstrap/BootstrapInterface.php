@@ -41,12 +41,6 @@ interface BootstrapInterface
      */
     public function onRequest($request, $response);
 
-    /**
-     * 用户请求结束执行的动作,该方法中执行的任务类似于register_shut_down,其中不应该影响用户请求结果
-     * @return mixed
-     */
-    public function onRequestEnd();
-
     public function onTask($server, $taskId, $srcWorkerId, $data);
 
     public function onFinish($server, $taskId, $data);

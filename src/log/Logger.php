@@ -8,6 +8,9 @@
 
 namespace tsingsun\swoole\log;
 
+use tsingsun\swoole\bootstrap\BaseBootstrap;
+use tsingsun\swoole\web\ErrorHandler;
+
 defined('YII2_SWOOLE_PATH') or define('YII2_SWOOLE_PATH', dirname(__DIR__));
 
 /**
@@ -16,15 +19,6 @@ defined('YII2_SWOOLE_PATH') or define('YII2_SWOOLE_PATH', dirname(__DIR__));
  */
 class Logger extends \yii\log\Logger
 {
-
-    public function init()
-    {
-        register_shutdown_function(function () {
-            //如果发生shutdown事件,则一般是swoole进程异常退出问题
-            \Yii::$app->getErrorHandler()->handleFatalError(true);
-        });
-        parent::init();
-    }
 
     public function log($message, $level, $category = 'application')
     {

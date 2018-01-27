@@ -32,7 +32,6 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * @return \Generator
      * @throws \Exception
      */
     public function run()
@@ -155,6 +154,7 @@ class Application extends \yii\web\Application
     {
         return $this->get('connectionManager');
     }
+
     /**
      * @inheritdoc
      */
@@ -164,5 +164,4 @@ class Application extends \yii\web\Application
             'connectionManager' => ['class' => 'tsingsun\swoole\pool\ConnectionManager'],
         ]);
     }
-
 }

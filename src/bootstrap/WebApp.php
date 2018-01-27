@@ -13,6 +13,7 @@ use Swoole\Http\Response as SwooleResponse;
 use tsingsun\swoole\web\Application;
 use tsingsun\swoole\web\ErrorHandler;
 use Yii;
+use yii\base\Event;
 
 /**
  * Yii starter for swoole server
@@ -30,21 +31,30 @@ class WebApp extends BaseBootstrap
     public function handleRequest($request, $response)
     {
         try {
-            $app = Yii::$app;
+            $app = new Application($this->appConfig);
             $app->getRequest()->setSwooleRequest($request);
             $app->getResponse()->setSwooleResponse($response);
+            $app->on(Application::EVENT_AFTER_RUN, [$this, 'onHandleRequestEnd']);
 
             $app->run();
+            $app->trigger(Application::EVENT_AFTER_RUN);
 
         } catch (\Exception $e) {
             $app->getErrorHandler()->handleException($e);
         } catch (\Throwable $e) {
             $eh = $app->getErrorHandler();
             if ($eh instanceof ErrorHandler) {
-                $eh->handleFallbackExceptionMessage($e, $e->getPrevious());
+                $eh->handleFatalError(true);
             }
-        } finally {
-            $app->trigger(Application::EVENT_AFTER_RUN);
+        }
+    }
+
+    public function onHandleRequestEnd(Event $event)
+    {
+        /** @var Application $app */
+        $app = $event->sender;
+        if ($app->has('session', true)) {
+            $app->getSession()->close();
         }
     }
 

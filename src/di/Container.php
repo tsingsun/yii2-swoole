@@ -40,6 +40,7 @@ class Container extends \yii\di\Container
      */
     private $classPersistent = [
         'tsingsun\swoole\pool\ConnectionManager',
+        'tsingsun\swoole\web\ErrorHandler',
         'yii\web\UrlManager',
         'yii\i18n\I18N'
     ];
@@ -83,7 +84,7 @@ class Container extends \yii\di\Container
             return self::$_persistents[$key];
         }
         $object = $this->buildInSwoole($class,$params,$config);
-        $this->classPersistent[$key] = $object;
+        self::$_persistents[$key] = $object;
         return $object;
     }
 

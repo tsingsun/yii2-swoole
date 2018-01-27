@@ -11,6 +11,7 @@ namespace tsingsun\swoole\bootstrap;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
 use Swoole\Http\Request;
+use tsingsun\swoole\web\Application;
 use Yii;
 use yii\base\Event;
 use yii\web\ForbiddenHttpException;
@@ -96,29 +97,30 @@ class WebSocketApp extends WebApp
     public function handleRequest($request, $response)
     {
         try {
-            Yii::$app->beforeRun();
-            Yii::$app->state = Yii::$app::STATE_BEFORE_REQUEST;
-            Yii::$app->trigger(Yii::$app::EVENT_BEFORE_REQUEST);
+            $app = new Application($this->appConfig);
+            $app->beforeRun();
+            $app->state = $app::STATE_BEFORE_REQUEST;
+            $app->trigger($app::EVENT_BEFORE_REQUEST);
 
-            Yii::$app->state = Yii::$app::STATE_HANDLING_REQUEST;
-            $response = Yii::$app->handleRequest(Yii::$app->getRequest());
+            $app->state = $app::STATE_HANDLING_REQUEST;
+            $response = $app->handleRequest($app->getRequest());
 
-            Yii::$app->state = Yii::$app::STATE_AFTER_REQUEST;
-            Yii::$app->trigger(Yii::$app::EVENT_AFTER_REQUEST);
-            Yii::$app->state = Yii::$app::STATE_SENDING_RESPONSE;
+            $app->state = $app::STATE_AFTER_REQUEST;
+            $app->trigger($app::EVENT_AFTER_REQUEST);
+            $app->state = $app::STATE_SENDING_RESPONSE;
 
             return json_encode(['data' => $response->data]);
         } catch (ForbiddenHttpException $fe) {
-            Yii::$app->getErrorHandler()->logException($fe);
+            $app->getErrorHandler()->logException($fe);
             return json_encode(['errors' => [['code' => $fe->getCode(), 'message' => $fe->getMessage()]]]);
         } catch (\Exception $e) {
-            Yii::$app->getErrorHandler()->logException($e);
+            $app->getErrorHandler()->logException($e);
             return json_encode(['errors' => [['code' => $e->getCode(), 'message' => $e->getMessage()]]]);
         } catch (\Throwable $t) {
-            Yii::$app->getErrorHandler()->logException($t);
+            $app->getErrorHandler()->logException($t);
             return json_encode(['errors' => [['code' => $t->getCode(), 'message' => $t->getMessage()]]]);
         } finally {
-            Yii::$app->trigger(Yii::$app::EVENT_AFTER_RUN);
+            $app->trigger($app::EVENT_AFTER_RUN);
         }
     }
 }
