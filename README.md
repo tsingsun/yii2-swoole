@@ -1,10 +1,8 @@
 关于 Yii2 Swoole
 ==================
 
-yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole上的一个方案,除了提高Yii的并发性能外,为YIIer做种服务提供便利.
-简单的说我们可以做什么呢,如WebSocket服务器,定时任务服务器,TCP服务器,大部分服务端应用都可以做,已经不再让PHP仅做前端.
-
-目前版本可在协程与非协程环境中运行,但建议开启swoole协程支持以达到最高的性能提升.
+本项目是基于[php-swoole扩展](www.swoole.com)协程版本,使yii2项目运行在swoole上的一个方案.  
+通过本本项目扩展,可极大的提高原项目并发性.而且可以通过Yii2的全栈框架开发TCP,UDP,WebSocket服务.  
 
 ## 安装
 ```php
@@ -13,34 +11,10 @@ yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole�
 ## 特点
 
 - 高度兼容Yii2项目,不需要改变项目代码.
-- 编写启动脚本,即可享受swoole + 协程带来的高性能.
-- 优化了内存管理,良好的请求响应速度
-- 本地化mysql,redis连接池
-- 重新实现了session功能
-
-## 受限
-
-部分Yii的功能在swoole环境,在代码开发时产生限制.具体请查阅[限制说明文档](doc/limit.md)  
-
-请仔细理解[swoole的编程需知](https://wiki.swoole.com/wiki/page/851.html),请求无影响大部分来源于此.     
-对于第三方包的call_user_func或call_user_func_array的处理请参考functionReplace.php的处理
-
-别外在协程环境下与xdebug产生冲突,导致无法断点只能用log查问题,希望swoole能在调试便利性上下功能.
-
-## 执行流程
-
-1.  服务启动: 服务端代码不依赖YII,这样保证在swoole启动动,进程中的PHP文件不包含有Yii内容.
-2.  workder进程创建: 在worker进程中初始化DI容器与上下文环境,让container持久化
-3.  onRequest中将创建新的Application对象,通过装饰Application::$app对象来支持协程.
-4.  新创建的Application对象将变成上下文容器,通过执行run方法响应客户端.
-5.  销毁Application对象,Application对象生命周期结束.
-
-## 改写的组件
-
-为了适应swoole的内存常驻机制,对Yii的一部分组件的进行了改写,尽量的保持用户不产生额外的代码修改,无感迁移.  
-在协程环境下,对各类组件需要区分哪些是上下文组件,哪些可以做为全局组件.
-
-一些组件的改写说明请参阅[组件改写说明](doc/component_changes.md)
+- 编写启动脚本,即可享受swoole + 协程带来的高性能的并发服务.
+- 优化了内存管理,良好的请求响应速度.
+- 本地化mysql,redis连接池.
+- 实现了在swoole下的session功能.
 
 ## 使用方法
 
@@ -56,10 +30,11 @@ defined('YII_ENV') or define('YII_ENV', 'dev');
 require(__DIR__ . '/../../vendor/autoload.php');
 $config = [
     'class'=>'tsingsun\swoole\server\HttpServer',
+    //Swoole的配置,根据实际情况配置
     'setting' => [
         'daemonize'=>0,
         'max_coro_num'=>3000,
-//        'reactor_num'=>1,
+        'reactor_num'=>1,
         'worker_num'=>1,
         'task_worker_num'=>1,
         'pid_file' => __DIR__ . '/../runtime/testHttp.pid',
@@ -74,13 +49,13 @@ Server::run($config,function (Server $server){
     $starter = new \tsingsun\swoole\bootstrap\WebApp($server);
     //初始化函数独立,为了在启动时,不会加载Yii相关的文件,在库更新时采用reload平滑启动服务器
     $starter->init = function (\tsingsun\swoole\bootstrap\BaseBootstrap $bootstrap) {
-        require(__DIR__ . '/../../src/Yii.php');
-
+        //需要使用Yii-Swoole项目的Yii文件,
+        require(__DIR__ . '/vendor/yii2-swoole/src/Yii.php');
+        //原项目的配置文件引入
         $config = yii\helpers\ArrayHelper::merge(
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
-        );
-        Yii::setAlias('@yiiunit/extension/swoole', __DIR__ . '/../');
+        );        
         $bootstrap->appConfig = $config;
     };
     $server->bootstrap = $starter;
@@ -101,11 +76,10 @@ php http_server.php stop
 ```
 - 运行方式
 
-* [HttpServer](doc/swooleHttpServer.md):把swoole当成http服务器运行.
-    
-* WebSocketServer  
-实现可以通过controller方式进行websocket服务编写,待补充文档
-* TCP/UDP Server  --TODO
+  - [HttpServer](doc/swooleHttpServer.md):把swoole当成http服务器运行.   
+  - WebSocketServer  
+    实现可以通过controller方式进行websocket服务编写,待补充文档
+  - TCP/UDP Server  --TODO
 
 - 开发调试  
   - 仍然可用基于集成环境如XAMPP等进行调试
@@ -115,6 +89,18 @@ php http_server.php stop
   - 如果出现页面信息输出至控制台,一般是被直接echo了,可跟踪各输出出口.
 
 > 由于swoole2.0与xdebug产生冲突(主要是一些协程的客户端类上),导致无法在IDE中调试,比较好的实践应该是在普通PHP环境下开发好,在swoole环境再测试
+
+## 受限
+
+原Yii2的部分功能在swoole环境具有一定限制.具体请查阅[限制说明文档](doc/limit.md)  
+
+请仔细理解[swoole的编程需知](https://wiki.swoole.com/wiki/page/851.html),请求无响应大部分来源于此.     
+对于第三方包的call_user_func或call_user_func_array的处理请参考functionReplace.php的处理
+
+## 改写的组件
+
+为了适应swoole的内存常驻机制,对Yii的一部分组件的进行了改写,尽量的保持用户不产生额外的代码修改,无感迁移.  
+一些组件的改写说明请参阅[组件改写说明](doc/component_changes.md)
 
 ### 联系我
 QQ: 21997272  

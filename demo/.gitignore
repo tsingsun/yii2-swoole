@@ -2,3 +2,4 @@
 *.*
 !.gitignore
 !README.md
+!/swoole_http_server.php
