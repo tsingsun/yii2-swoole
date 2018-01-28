@@ -65,7 +65,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     public function handleFallbackExceptionMessage($exception, $previousException)
     {
         $msg = "An Error occurred while handling another error:\n";
-        $msg .= "worker:#" . ($_SERVER['workerId'] ?? '');
+        $msg .= "worker:#" . ($_SERVER['WORKER_ID'] ?? '');
         $msg .= (string)$exception;
         $msg .= "\nPrevious exception:\n";
         $msg .= (string)$previousException;
@@ -78,7 +78,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         } else {
             $msg = 'An internal server error occurred.';
         }
-        $msg .= "\n\$_SERVER = " . print_r($_SERVER, true);
+//        $msg .= "\n\$_SERVER = " . print_r($_SERVER, true);
         error_log($msg);
         if (defined('HHVM_VERSION')) {
             flush();

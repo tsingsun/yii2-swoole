@@ -35,9 +35,9 @@ class Server
 
     public $port = 9501;
     /**
-     * @var int 请求超时设置,以毫秒为单位
+     * @var int 请求超时设置,以秒为单位
      */
-    public $timeout = 30 * 1000;
+    public $timeout = 0;
     /**
      * @var \tsingsun\swoole\bootstrap\BootstrapInterface
      */

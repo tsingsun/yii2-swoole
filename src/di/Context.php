@@ -9,6 +9,7 @@
 namespace tsingsun\swoole\di;
 
 use Swoole\Coroutine;
+use tsingsun\swoole\web\Application;
 
 /**
  * 用于存放协程发生的上下文的容器
@@ -51,16 +52,16 @@ final class Context
         self::$coroutineData[$id][self::CONTAINER_KEY] = $container;
     }
 
-    public function getApplication()
+    /**
+     * @param null|int $coroutineId
+     * @return Application
+     */
+    public function getApplication($coroutineId = null)
     {
-        $id = self::getCoroutineId();
+        $id = $coroutineId ?? self::getCoroutineId();
         $result = self::$coroutineData[$id][self::APPLICATION_KEY] ?? null;
         if (!$result) {
-            if ($id == -1) {
-                throw new \RuntimeException("current application is not found");
-            } else {
-                throw new \RuntimeException("current coroutine application is not found");
-            }
+            throw new \RuntimeException("current coroutine application is not found");
         }
         return $result;
     }

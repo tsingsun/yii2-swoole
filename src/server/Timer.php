@@ -9,9 +9,18 @@
 namespace tsingsun\swoole\server;
 
 
+use Swoole\Coroutine;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
 
+/**
+ * 支持协程的定时器 Timer
+ * 定时器启动时,是启用新的协程,因此在通过Coroutine::getid()时需要注意,回调函数提供了定时器启动的协程ID
+ * 回调函数
+ *      function(Callback $cb,$jobId,$coroutineID)
+ *      - $coroutineID 启动的协程ID
+ * @package tsingsun\swoole\server
+ */
 class Timer
 {
     private static $tickMap = [];
@@ -36,8 +45,8 @@ class Timer
         if (isset(self::$tickMap[$jobId])) {
             throw new Exception('job name is exist!');
         }
-
-        $timerId = swoole_timer_tick($interval, self::formatTickCallback($jobId, $callback));
+        $coroutineId = Coroutine::getuid();
+        $timerId = swoole_timer_tick($interval, self::formatTickCallback($jobId, $callback,$coroutineId));
         self::$tickMap[$jobId] = $timerId;
 
         return $jobId;
@@ -61,8 +70,8 @@ class Timer
         if (isset(self::$afterMap[$jobId])) {
             throw new Exception('job name is exist!');
         }
-
-        $timerId = swoole_timer_after($interval, self::formatAfterCallback($jobId, $callback));
+        $coroutineId = Coroutine::getuid();
+        $timerId = swoole_timer_after($interval, self::formatAfterCallback($jobId, $callback,$coroutineId));
         self::$afterMap[$jobId] = $timerId;
 
         return $jobId;
@@ -142,12 +151,16 @@ class Timer
     /**
      * @param $jobId
      * @param callable $callback
+     * @param $coroutineId
+     *
      * @return \Closure
      */
-    private static function formatTickCallback($jobId, Callable $callback)
+    private static function formatTickCallback($jobId, Callable $callback,$coroutineId)
     {
-        return function() use ($jobId, $callback) {
-            call_user_func($callback, $jobId);
+        //创建当前任务的协程ID.
+
+        return function() use ($jobId, $callback,$coroutineId) {
+            $callback($jobId,$coroutineId);
         };
     }
 
@@ -156,11 +169,11 @@ class Timer
      * @param callable $callback
      * @return \Closure
      */
-    private static function formatAfterCallback($jobId, Callable $callback)
+    private static function formatAfterCallback($jobId, Callable $callback,$coroutineId)
     {
-        return function() use ($jobId, $callback) {
+        return function() use ($jobId, $callback,$coroutineId) {
             Timer::clearAfterMap($jobId);
-            call_user_func($callback, $jobId);
+            $callback($jobId,$coroutineId);
         };
     }
 

@@ -42,10 +42,13 @@ class ApplicationDecorator
     }
 
     /**
+     * 根据协程ID
+     * @param $coroutineId
      * @return \Yii\base\Application
+     *
      */
-    public function getApplication()
+    public function getApplication($coroutineId = null)
     {
-        return Yii::$context->getApplication();
+        return Yii::$context->getApplication($coroutineId);
     }
 }

@@ -12,8 +12,11 @@ yii2 swoole是基于[swoole扩展](www.swoole.com),使yii项目运行在swoole�
 ```
 ## 特点
 
-- 在不改变原项目代码的基础上,引用本包,即可以享受swoole + 协程带来的高性能
-- 本地化mysql,redis连接池 
+- 高度兼容Yii2项目,不需要改变项目代码.
+- 编写启动脚本,即可享受swoole + 协程带来的高性能.
+- 优化了内存管理,良好的请求响应速度
+- 本地化mysql,redis连接池
+- 重新实现了session功能
 
 ## 受限
 
