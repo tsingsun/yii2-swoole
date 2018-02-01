@@ -20,7 +20,6 @@ class Session extends \yii\web\Session
 
     public function init()
     {
-        parent::init();
 //        register_shutdown_function([$this, 'close']);
         $this->registerSessionHandler();
         if ($this->getIsActive()) {

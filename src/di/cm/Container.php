@@ -30,7 +30,7 @@ class Container extends \yii\di\Container
         'yii\db\Command' => 'tsingsun\swoole\db\Command',
         'yii\db\Connection' => 'tsingsun\swoole\db\cm\Connection',
         'yii\redis\Connection' => 'tsingsun\swoole\redis\cm\Connection',
-        'yii\redis\Session' => 'tsingsun\swoole\redis\Session',
+        'yii\redis\Session' => 'tsingsun\swoole\redis\cm\Session',
     ];
 
     protected $autoReplace = true;
@@ -44,6 +44,7 @@ class Container extends \yii\di\Container
         'tsingsun\swoole\web\cm\Session',
         'tsingsun\swoole\web\cm\CacheSession',
         'tsingsun\swoole\web\cm\DbSession',
+        'tsingsun\swoole\redis\cm\Session',
         'tsingsun\swoole\log\Logger',
         'tsingsun\swoole\pool\ConnectionManager',
         'tsingsun\swoole\web\ErrorHandler',
