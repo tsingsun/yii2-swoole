@@ -14,8 +14,10 @@
 - 一行代码切换协程和非协程环境的支持
 - 编写启动脚本,即可享受swoole + 协程带来的高性能的并发服务.
 - 运行内存表现稳定.
-- 本地化mysql,redis连接池.
+- 本地化mysql,redis连接池(协程环境下,非协程链接池意义不大).
 - 实现了在swoole下的session功能.
+
+> 如果你想简单的实现swoole,那可以直接采用非协程环境.因为在协程环境下,还需要做一些call_user_func的函数替换.
 
 ## 使用方法
 
@@ -28,7 +30,7 @@ use \tsingsun\swoole\server\Server;
 defined('WEBROOT') or define('WEBROOT', __DIR__);
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 defined('YII_ENV') or define('YII_ENV', 'dev');
-协程与非协程的切换
+//协程与非协程的切换
 defined('COROUTINE_ENV') or define('COROUTINE_ENV', true);
 
 require(__DIR__ . '/../../vendor/autoload.php');
