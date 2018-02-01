@@ -26,9 +26,14 @@ class Request extends \yii\web\Request
      */
     public $swooleRequest;
 
+    /**
+     * 设置swoole请求,并清理变量
+     * @param \Swoole\Http\Request $request
+     */
     public function setSwooleRequest(\Swoole\Http\Request $request)
     {
         $this->swooleRequest = $request;
+        $this->clear();
     }
 
     /**
@@ -333,6 +338,23 @@ class Request extends \yii\web\Request
         }
 
         return $this->_port;
+    }
+
+    /**
+     * 清理变量
+     */
+    public function clear()
+    {
+        $this->_headers = null;
+        $this->_port = null;
+        $this->_bodyParams = null;
+        $this->_queryParams = null;
+        $this->_rawBody = null;
+        $this->setHostInfo(null);
+        $this->setPathInfo(null);
+        $this->setUrl(null);
+        $this->setAcceptableContentTypes(null);
+        $this->setAcceptableLanguages(null);
     }
 
 }

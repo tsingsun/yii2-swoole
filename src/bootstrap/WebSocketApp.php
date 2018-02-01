@@ -41,7 +41,7 @@ class WebSocketApp extends WebApp
         $this->dataRoute = $request->server['path_info'] . '/open';
         $data = $this->onRequest($request, null);
         $this->routes[$request->fd] = $request->server['path_info'];
-        $ws->push($request->fd, $data);
+        $ws->push($request->fd, json_encode($data));
     }
 
     /**
@@ -53,7 +53,7 @@ class WebSocketApp extends WebApp
     {
         $this->parseFrameProtocol($frame);
         $data = $this->onRequest(null, null);
-        $ws->push($frame->fd, $data);
+        $ws->push($frame->fd, json_encode($data));
     }
 
     public function onClose(Server $ws, $fd)
@@ -109,16 +109,16 @@ class WebSocketApp extends WebApp
             $app->trigger($app::EVENT_AFTER_REQUEST);
             $app->state = $app::STATE_SENDING_RESPONSE;
 
-            return json_encode(['data' => $response->data]);
+            return ['data' => $response->data];
         } catch (ForbiddenHttpException $fe) {
             $app->getErrorHandler()->logException($fe);
-            return json_encode(['errors' => [['code' => $fe->getCode(), 'message' => $fe->getMessage()]]]);
+            return ['errors' => [['code' => $fe->getCode(), 'message' => $fe->getMessage()]]];
         } catch (\Exception $e) {
             $app->getErrorHandler()->logException($e);
-            return json_encode(['errors' => [['code' => $e->getCode(), 'message' => $e->getMessage()]]]);
+            return ['errors' => [['code' => $e->getCode(), 'message' => $e->getMessage()]]];
         } catch (\Throwable $t) {
             $app->getErrorHandler()->logException($t);
-            return json_encode(['errors' => [['code' => $t->getCode(), 'message' => $t->getMessage()]]]);
+            return ['errors' => [['code' => $t->getCode(), 'message' => $t->getMessage()]]];
         } finally {
             $app->trigger($app::EVENT_AFTER_RUN);
         }

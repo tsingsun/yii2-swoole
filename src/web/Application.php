@@ -14,21 +14,37 @@ use yii\base\InvalidConfigException;
  */
 class Application extends \yii\web\Application
 {
+    /**
+     * @var bool 是否已经被引导,对于swoole模式下,只需要引导一次.
+     */
+    static $_hasBootstrap = false;
+
     const EVENT_AFTER_RUN = 'afterRun';
 
-    private $bootstrapComponents = [];
+    private static $bootstrapComponents = [];
 
     public function __construct(array $config = [])
     {
-        Yii::$app = new ApplicationDecorator();
-        Yii::$context->setApplication($this);
+        if (COROUTINE_ENV) {
+            Yii::$app = new ApplicationDecorator();
+            Yii::$context->setApplication($this);
+        } else {
+            Yii::$app = $this;
+        }
         static::setInstance($this);
         $this->state = self::STATE_BEGIN;
 
         $this->preInit($config);
-
-        $this->registerErrorHandler($config);
+        if (!self::$_hasBootstrap) {
+            $this->registerErrorHandler($config);
+        }
         Component::__construct($config);
+    }
+
+    public function init()
+    {
+        $this->state = self::STATE_INIT;
+        $this->bootstrap();
     }
 
     /**
@@ -77,52 +93,58 @@ class Application extends \yii\web\Application
      */
     protected function bootstrap()
     {
-        if ($this->extensions === null) {
-            $file = Yii::getAlias('@vendor/yiisoft/extensions.php');
-            $this->extensions = is_file($file) ? include($file) : [];
-        }
-        foreach ($this->extensions as $extension) {
-            if (!empty($extension['alias'])) {
-                foreach ($extension['alias'] as $name => $path) {
-                    Yii::setAlias($name, $path);
+        if (!self::$_hasBootstrap) {
+            if ($this->extensions === null) {
+                $file = Yii::getAlias('@vendor/yiisoft/extensions.php');
+                $this->extensions = is_file($file) ? include($file) : [];
+            }
+
+
+            foreach ($this->extensions as $extension) {
+                if (!empty($extension['alias'])) {
+                    foreach ($extension['alias'] as $name => $path) {
+                        Yii::setAlias($name, $path);
+                    }
+                }
+                if (isset($extension['bootstrap'])) {
+                    $component = Yii::createObject($extension['bootstrap']);
+                    if ($component instanceof BootstrapInterface) {
+                        self::$bootstrapComponents[] = $component;
+                    } else {
+                        Yii::trace('Bootstrap with ' . get_class($component), __METHOD__);
+                    }
                 }
             }
-            if (isset($extension['bootstrap'])) {
-                $component = Yii::createObject($extension['bootstrap']);
+
+            foreach ($this->bootstrap as $class) {
+                $component = null;
+                if (is_string($class)) {
+                    if ($this->has($class)) {
+                        $component = $this->get($class);
+                    } elseif ($this->hasModule($class)) {
+                        $component = $this->getModule($class);
+                    } elseif (strpos($class, '\\') === false) {
+                        throw new InvalidConfigException("Unknown bootstrapping component ID: $class");
+                    }
+                }
+                if (!isset($component)) {
+                    $component = Yii::createObject($class);
+                }
+
                 if ($component instanceof BootstrapInterface) {
-                    $this->bootstrapComponents[] = $component;
+                    //记录组件,不重启
+                    self::$bootstrapComponents[] = $component;
                 } else {
                     Yii::trace('Bootstrap with ' . get_class($component), __METHOD__);
                 }
             }
-        }
-        foreach ($this->bootstrap as $class) {
-            $component = null;
-            if (is_string($class)) {
-                if ($this->has($class)) {
-                    $component = $this->get($class);
-                } elseif ($this->hasModule($class)) {
-                    $component = $this->getModule($class);
-                } elseif (strpos($class, '\\') === false) {
-                    throw new InvalidConfigException("Unknown bootstrapping component ID: $class");
-                }
-            }
-            if (!isset($component)) {
-                $component = Yii::createObject($class);
-            }
-
-            if ($component instanceof BootstrapInterface) {
-                //记录组件,不重启
-                $this->bootstrapComponents[] = $component;
-            } else {
-                Yii::trace('Bootstrap with ' . get_class($component), __METHOD__);
-            }
+            self::$_hasBootstrap = true;
         }
     }
 
     protected function runComponentBootstrap()
     {
-        foreach ($this->bootstrapComponents as $component) {
+        foreach (self::$bootstrapComponents as $component) {
             if ($component instanceof BootstrapInterface) {
                 Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
                 $component->bootstrap($this);

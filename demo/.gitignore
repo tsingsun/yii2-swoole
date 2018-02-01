@@ -2,4 +2,5 @@
 *.*
 !.gitignore
 !README.md
-!/swoole_http_server.php
+!/http_server_common.php
+!/http_server_coroutine.php

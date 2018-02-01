@@ -6,7 +6,7 @@
  * Time: 下午4:28
  */
 
-namespace tsingsun\swoole\di;
+namespace tsingsun\swoole\di\cm;
 
 use Yii;
 use yii\di\NotInstantiableException;
@@ -23,13 +23,13 @@ class Container extends \yii\di\Container
         'yii\web\Response' => 'tsingsun\swoole\web\Response',
         'yii\web\ErrorHandler' => 'tsingsun\swoole\web\ErrorHandler',
         'yii\log\Logger' => 'tsingsun\swoole\log\Logger',
-        'yii\web\Session' => 'tsingsun\swoole\web\Session',
-        'yii\web\CacheSession' => 'tsingsun\swoole\web\CacheSession',
-        'yii\web\DbSession' => 'tsingsun\swoole\web\DbSession',
+        'yii\web\Session' => 'tsingsun\swoole\web\cm\Session',
+        'yii\web\CacheSession' => 'tsingsun\swoole\web\cm\CacheSession',
+        'yii\web\DbSession' => 'tsingsun\swoole\web\cm\DbSession',
         'yii\log\FileTarget' => 'tsingsun\swoole\log\FileTarget',
         'yii\db\Command' => 'tsingsun\swoole\db\Command',
-        'yii\db\Connection' => 'tsingsun\swoole\db\Connection',
-        'yii\redis\Connection' => 'tsingsun\swoole\redis\Connection',
+        'yii\db\Connection' => 'tsingsun\swoole\db\cm\Connection',
+        'yii\redis\Connection' => 'tsingsun\swoole\redis\cm\Connection',
         'yii\redis\Session' => 'tsingsun\swoole\redis\Session',
     ];
 
@@ -39,8 +39,13 @@ class Container extends \yii\di\Container
      * @var array
      */
     private $classPersistent = [
-        'tsingsun\swoole\pool\ConnectionManager',
+        'tsingsun\swoole\web\Request',
+        'tsingsun\swoole\web\Response',
+        'tsingsun\swoole\web\cm\Session',
+        'tsingsun\swoole\web\cm\CacheSession',
+        'tsingsun\swoole\web\cm\DbSession',
         'tsingsun\swoole\log\Logger',
+        'tsingsun\swoole\pool\ConnectionManager',
         'tsingsun\swoole\web\ErrorHandler',
         'yii\web\UrlManager',
         'yii\i18n\I18N'
@@ -84,7 +89,7 @@ class Container extends \yii\di\Container
         if(isset(self::$_persistents[$key])){
             return self::$_persistents[$key];
         }
-        $object = $this->buildInSwoole($class,$params,$config);
+        $object = parent::build($class,$params,$config);
         self::$_persistents[$key] = $object;
         return $object;
     }
@@ -98,47 +103,6 @@ class Container extends \yii\di\Container
     protected function buildKey($class, $params, $config)
     {
         return $class . md5(json_encode($params).json_encode($config));
-    }
-
-    /**
-     * 原生Reflection反射构造时在swoole中存在冲突,需要重新处理
-     * @see https://github.com/swoole/swoole-src/issues/1020
-     * @param $class
-     * @param $params
-     * @param $config
-     * @return object
-     * @throws NotInstantiableException
-     */
-    private function buildInSwoole($class, $params, $config)
-    {
-        /* @var $reflection \ReflectionClass */
-        list ($reflection, $dependencies) = $this->getDependencies($class);
-
-        foreach ($params as $index => $param) {
-            $dependencies[$index] = $param;
-        }
-
-        $dependencies = $this->resolveDependencies($dependencies, $reflection);
-        if (!$reflection->isInstantiable()) {
-            throw new NotInstantiableException($reflection->name);
-        }
-        if (empty($config)) {
-            return $reflection->newInstanceArgs($dependencies);
-        }
-
-        if (!empty($dependencies) && $reflection->implementsInterface('yii\base\Configurable')) {
-            $dependencies[count($dependencies) - 1] = $config;
-            $instance = $reflection->newInstanceWithoutConstructor();
-            call_user_func_array([$instance, '__construct'], $dependencies);
-            return $instance;
-        } else {
-            $object = $reflection->newInstanceWithoutConstructor();
-            call_user_func_array([$object, '__construct'], $dependencies);
-            foreach ($config as $name => $value) {
-                $object->$name = $value;
-            }
-            return $object;
-        }
     }
 
 }

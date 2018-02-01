@@ -21,7 +21,6 @@ use yii\base\Event;
  */
 class WebApp extends BaseBootstrap
 {
-
     /**
      * @param SwooleRequest $request
      * @param SwooleResponse $response
@@ -36,19 +35,25 @@ class WebApp extends BaseBootstrap
             $app->getResponse()->setSwooleResponse($response);
             $app->on(Application::EVENT_AFTER_RUN, [$this, 'onHandleRequestEnd']);
 
-            $app->run();
+            $status = $app->run();
             $app->trigger(Application::EVENT_AFTER_RUN);
-
+            return $status == 0;
         } catch (\Exception $e) {
             $app->getErrorHandler()->handleException($e);
+            return false;
         } catch (\Throwable $e) {
             $eh = $app->getErrorHandler();
             if ($eh instanceof ErrorHandler) {
                 $eh->handleFatalError(true);
             }
+            return false;
         }
     }
 
+    /**
+     * 请求处理结束事件
+     * @param Event $event
+     */
     public function onHandleRequestEnd(Event $event)
     {
         /** @var Application $app */

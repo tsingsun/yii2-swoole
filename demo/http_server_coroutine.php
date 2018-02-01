@@ -7,9 +7,11 @@ use \tsingsun\swoole\server\Server;
  * Date: 2017/2/28
  * Time: 上午11:15
  */
+//路径根据实际文件位置
 defined('WEBROOT') or define('WEBROOT', __DIR__);
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 defined('YII_ENV') or define('YII_ENV', 'dev');
+defined('COROUTINE_ENV') or define('COROUTINE_ENV', true);
 
 require(__DIR__ . '/../../vendor/autoload.php');
 $config = [

@@ -10,6 +10,7 @@
 ```
 ## 特点
 
+- 一行代码 支持协程和非协程环境
 - 高度兼容Yii2项目,不需要改变项目代码.
 - 编写启动脚本,即可享受swoole + 协程带来的高性能的并发服务.
 - 优化了内存管理,良好的请求响应速度.
@@ -19,13 +20,16 @@
 ## 使用方法
 
 - swoole启动文件    
-启动文件为服务启动脚本,根据不同的服务类型定制,也可以根据业务来定制,具体请查看运行方式中的各服务器说明.
+启动文件为服务启动脚本,根据不同的服务类型定制,也可以根据业务来定制,具体请查看运行方式中的各服务器说明.  
+协程与非协程的切换也在启动脚本中.
 ```php
 use \tsingsun\swoole\server\Server;
 
 defined('WEBROOT') or define('WEBROOT', __DIR__);
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 defined('YII_ENV') or define('YII_ENV', 'dev');
+协程与非协程的切换
+defined('COROUTINE_ENV') or define('COROUTINE_ENV', true);
 
 require(__DIR__ . '/../../vendor/autoload.php');
 $config = [

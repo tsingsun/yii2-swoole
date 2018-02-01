@@ -12,11 +12,16 @@ use Yii;
 use yii\base\InvalidParamException;
 
 /**
- * swoole对原生php session的部分操作存在部分不支持,如session_set_cookie_params
+ * 协程模式下的session处理类
+ *
+ * @see \tsingsun\swoole\web\cm\SessionTrait 非协程下的引用的类
  * @package tsingsun\swoole\web
  */
 trait SessionTrait
 {
+    /**
+     * @var null|bool 客户端是否存在phpsessid
+     */
     private $_hasSessionId = null;
 
     private $_isActive = false;

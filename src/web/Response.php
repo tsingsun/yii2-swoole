@@ -22,9 +22,14 @@ class Response extends \yii\web\Response
      */
     protected $swooleResponse;
 
+    /**
+     * 重置Response,重置时清变量
+     * @param $res
+     */
     public function setSwooleResponse($res)
     {
         $this->swooleResponse = $res;
+        $this->clear();
     }
 
     public function getSwooleResponse()
