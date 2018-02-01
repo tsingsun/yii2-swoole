@@ -2,7 +2,7 @@
 ==================
 
 本项目是基于[php-swoole扩展](www.swoole.com)协程版本,使yii2项目运行在swoole上的一个方案.  
-通过本本项目扩展,可极大的提高原项目并发性.而且可以通过Yii2的全栈框架开发TCP,UDP,WebSocket服务.  
+通过本本项目扩展,可极大的提高原项目并发性.而且可以通过Yii2的全栈框架开发TCP,UDP,WebSocket等网络服务.  
 
 ## 安装
 ```php
