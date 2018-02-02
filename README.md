@@ -1,8 +1,13 @@
 关于 Yii2 Swoole
 ==================
 
+[![Latest Stable Version](https://poser.pugx.org/tsingsun/yii2-swoole/v/stable.svg)](https://packagist.org/packages/tsingsun/yii2-swoole)
+[![Build Status](https://travis-ci.org/tsingsun/yii2-swoole.png?branch=master)](https://travis-ci.org/tsingsun/yii2-swoole)
+[![Total Downloads](https://poser.pugx.org/tsingsun/yii2-swoole/downloads.svg)](https://packagist.org/packages/tsingsun/yii2-swoole)
+
+
 本项目是基于[php-swoole扩展](www.swoole.com)协程版本,使yii2项目运行在swoole上的一个方案.  
-通过本本项目扩展,可极大的提高原项目并发性.而且可以通过Yii2的全栈框架开发TCP,UDP,WebSocket等网络服务.  
+通过本项目扩展,可极大的提高原项目并发性.而且可以通过Yii2的全栈框架开发TCP,UDP,WebSocket等网络服务.  
 
 ## 安装
 ```php
@@ -17,7 +22,7 @@
 - 本地化mysql,redis连接池(协程环境下,非协程链接池意义不大).
 - 实现了在swoole下的session功能.
 
-> 如果你想简单的实现swoole,那可以直接采用非协程环境.因为在协程环境下,还需要做一些call_user_func的函数替换.
+> 如果你想简单的实现swoole,那可以直接采用非协程环境.在协程环境下时可能还需要做call_user_func的函数替换.
 
 ## 使用方法
 
