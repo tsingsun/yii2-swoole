@@ -85,10 +85,7 @@ class Server
                     'Receive', 'Connect', 'Close', 'Timer', 'WorkerStop', 'WorkerError'];
                 break;
         }
-        if(!isset($this->setting['chroot'])){
-            //默认当前站点路径
-            $this->setting['chroot'] = $this->root;
-        }
+
         $this->swoole->set($this->setting);
 
         $this->swoole->on('Start',[$this,'onStart']);

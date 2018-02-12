@@ -31,7 +31,7 @@
 协程与非协程的切换也在启动脚本中.
 ```php
 use \tsingsun\swoole\server\Server;
-
+//站点根目录,相当于nginx的root配置
 defined('WEBROOT') or define('WEBROOT', __DIR__);
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 defined('YII_ENV') or define('YII_ENV', 'dev');
