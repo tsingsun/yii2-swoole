@@ -11,7 +11,7 @@
 
 ## 安装
 ```php
-    composer require tsingsun\yii2-swoole
+    composer require tsingsun/yii2-swoole
 ```
 ## 特点
 
