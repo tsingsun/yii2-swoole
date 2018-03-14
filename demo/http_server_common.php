@@ -8,7 +8,7 @@ use \tsingsun\swoole\server\Server;
  * Time: 上午11:15
  */
 //路径根据实际文件位置
-defined('WEBROOT') or define('WEBROOT', __DIR__);
+defined('WEBROOT') or define('WEBROOT', __DIR__.'/web');
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 defined('YII_ENV') or define('YII_ENV', 'dev');
 
@@ -21,11 +21,9 @@ $config = [
         'max_coro_num'=>300,
         'reactor_num'=>1,
         'worker_num'=>1,
-        'pid_file' => __DIR__ . '/../runtime/testHttp.pid',
-        'log_file' => __DIR__.'/../runtime/logs/swoole.log',
+        'pid_file' => __DIR__ . '/runtime/testHttp.pid',
+        'log_file' => __DIR__.'/runtime/logs/swoole.log',
         'debug_mode'=> 1,
-        'user'=>'tsingsun',
-        'group'=>'staff',
     ],
 ];
 
@@ -39,6 +37,8 @@ Server::run($config,function (Server $server){
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
+        Yii::setAlias('@webroot', WEBROOT);
+        Yii::setAlias('@web', '/');
         $bootstrap->appConfig = $config;
     };
     $server->bootstrap = $starter;

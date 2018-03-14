@@ -80,7 +80,7 @@ Usage: php [startScript] [command]
 ```php
 //启动
 php http_server.php start
-//重启 
+//平滑重启,kill方式,需要root权限, 
 php http_server.php reload
 //关闭
 php http_server.php stop

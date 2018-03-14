@@ -40,6 +40,8 @@ Server::run($config,function (Server $server){
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
+        Yii::setAlias('@webroot', WEBROOT);
+        Yii::setAlias('@web', '/');
         $bootstrap->appConfig = $config;
     };
     $server->bootstrap = $starter;

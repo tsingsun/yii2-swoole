@@ -264,7 +264,7 @@ class Server
         }elseif($command == 'reload'){
             if (!empty($masterPid)) {
                 posix_kill($masterPid, SIGUSR1); // reload all worker
-                posix_kill($masterPid, SIGUSR2); // reload all task
+//                posix_kill($masterPid, SIGUSR2); // reload all task
             } else {
                 print_r('master pid is null, maybe you delete the pid file we created. you can manually kill the master process with signal SIGUSR1.'.PHP_EOL);
             }
