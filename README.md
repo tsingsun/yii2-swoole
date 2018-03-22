@@ -6,7 +6,7 @@
 [![Total Downloads](https://poser.pugx.org/tsingsun/yii2-swoole/downloads.svg)](https://packagist.org/packages/tsingsun/yii2-swoole)
 
 
-本项目是基于[php-swoole扩展](www.swoole.com)协程版本,使yii2项目运行在swoole上的一个方案.  
+本项目是基于[php-swoole扩展](http://www.swoole.com)协程版本,使yii2项目运行在swoole上的一个方案.  
 通过本项目扩展,可极大的提高原项目并发性.而且可以通过Yii2的全栈框架开发TCP,UDP,WebSocket等网络服务.  
 
 ## 安装
@@ -87,7 +87,7 @@ php http_server.php stop
 ```
 - 运行方式
 
-  - [HttpServer](doc/swooleHttpServer.md):把swoole当成http服务器运行.   
+  - [HttpServer](doc/httpServer.md):把swoole当成http服务器运行.   
   - WebSocketServer  
     实现可以通过controller方式进行websocket服务编写,待补充文档
   - TCP/UDP Server  --TODO

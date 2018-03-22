@@ -12,14 +12,14 @@ Swoole Http Server
 return [
     'class'=>'tsingsun\swoole\server\HttpServer',
     'setting' => [
-    //            'daemonize'=>1,
+        'daemonize'=>1,
         'reactor_num'=>1,
         'worker_num'=>1,
-        'pid_file' => __DIR__ . '/testHttp.pid',
+        'pid_file' => __DIR__ . '/../runtime/http.pid',
         'log_file' => __DIR__.'/../runtime/logs/swoole.log',
         'debug_mode'=> 1,
         'user'=>'tsingsun',
-        group'=>'staff',
+        'group'=>'staff',
     ],
 ];
 ```
@@ -41,14 +41,53 @@ $config = require(__DIR__ . '/../config/swoole.php');
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
         );
-        //需要在此先设置资源有关的别名
+        //与Web相关时，需要在此先设置资源有关的别名
         Yii::setAlias('@webroot', WEBROOT);
-        Yii::setAlias('@web', '/');
-        //可以自定义实现
-        Yii::$container = new \tsingsun\swoole\di\Container();
-        $bootstrap->app = new \tsingsun\swoole\web\Application($config);        
+        Yii::setAlias('@web', '/');                
     };
     $server->bootstrap = $starter;
     $server->start();
 });
+```
+3. nginx配置例子：
+```
+server{
+        listen       80;
+        root         /home/www/web/;
+        index        index.php;
+        
+        location / {
+                proxy_http_version 1.1;
+                proxy_set_header Host $http_host;
+                proxy_set_header Connection "keep-alive";
+                proxy_set_header X-Real-IP $remote_addr;
+                if (!-e $request_filename) {
+                        #rewrite ^(.*)$ /index.php/$1 last;
+                        proxy_pass http://127.0.0.1:9501;
+                }
+        }
+        location ~ /.*\.(gif|jpg|jpeg|png|ico)$ {
+                expires 1d;
+        }
+
+        location ~ /.*\.(js|css)$ {
+                expires 10m;
+        }
+
+        error_page  404              /404.html;
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+                root   html;
+        }
+
+        location ~ \.php$ {
+                try_files $uri =404;
+                proxy_http_version 1.1;
+                proxy_set_header Host $http_host;
+                proxy_set_header Connection "keep-alive";
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_pass http://127.0.0.1:9501;
+        }
+}
 ```

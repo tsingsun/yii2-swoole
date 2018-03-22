@@ -9,14 +9,11 @@
 namespace tsingsun\swoole\bootstrap;
 
 use Swoole\Http\Request as SwooleRequest;
-use Swoole\Http\Response;
 use tsingsun\swoole\di\Container;
 use tsingsun\swoole\di\ContainerDecorator;
 use tsingsun\swoole\di\Context;
 use tsingsun\swoole\server\Server;
-use tsingsun\swoole\server\Timer;
 use Yii;
-use yii\web\HttpException;
 
 defined('COROUTINE_ENV') or define('COROUTINE_ENV', false);
 
@@ -74,7 +71,6 @@ abstract class BaseBootstrap implements BootstrapInterface
     /**
      * 根据请求,构建Yii的环境变量
      * @param SwooleRequest $request
-     * @return mixed
      */
     protected function initRequest($request)
     {
@@ -119,44 +115,18 @@ abstract class BaseBootstrap implements BootstrapInterface
      */
     public function onRequest($request, $response)
     {
-        try {
-            if ($this->server->timeout !== 0) {
-                Timer::after($this->server->timeout, [$this, 'handleTimeout'], $this->getRequestTimeoutJobId($request));
-            }
-            $this->initRequest($request);
-            if (COROUTINE_ENV) {
-                //协程环境每次都初始化容器,以做协程隔离
-                Yii::$context->setContainer(new Container());
-            }
-            $status = $this->handleRequest($request, $response);
-            if (is_array($status)) {
-                //兼容websocket格式
-                $status = isset($status['error']);
-            }
-            return $status;
-        } catch (\Throwable $throwable) {
-            //handleRequest要求做导常处理,到外层已经很少了.
-            Yii::$app->getErrorHandler()->handleFatalError(false);
-            $status = false;
-        } finally {
-            if ($this->server->timeout !== 0) {
-                Timer::clearAfterJob($this->getRequestTimeoutJobId($request));
-            }
-            $this->onRequestEnd($status);
-            if (COROUTINE_ENV) {
-                Yii::$context->removeCurrentCoroutineData();
-            }
+        $this->initRequest($request);
+        if (COROUTINE_ENV) {
+            //协程环境每次都初始化容器,以做协程隔离
+            Yii::$context->setContainer(new Container());
         }
 
-    }
+        $result = $this->handleRequest($request, $response);
 
-    /**
-     * @param $status bool 执行状态
-     */
-    public function onRequestEnd($status)
-    {
-        $logger = Yii::getLogger();
-        $logger->flush(!$status);
+        if (COROUTINE_ENV) {
+            Yii::$context->removeCurrentCoroutineData();
+        }
+        return $result;
     }
 
     public function onWorkerError($swooleServer, $workerId, $workerPid, $exitCode, $sigNo)
@@ -200,39 +170,5 @@ abstract class BaseBootstrap implements BootstrapInterface
         $_SERVER['SCRIPT_FILENAME'] = ($this->server ? $this->server->root : '') . $this->index;
 
         $_SERVER['WORKER_ID'] = $this->workerId;
-    }
-
-    /**
-     * 处理超时请求
-     * @param $jobId
-     * @param $coroutineId
-     */
-    public function handleTimeout($jobId, $coroutineId)
-    {
-        try {
-            Timer::clearAfterJob($jobId);
-            $exception = new HttpException(408, '服务器超时');
-            //handleException中已经初步处理了各类异常
-            $app = Yii::$context->getApplication($coroutineId);
-            if ($app) {
-                $app->getErrorHandler()->logException($exception);
-                /** @var Response $res */
-                $res = $app->getResponse()->getSwooleResponse();
-                $res->status(408);
-                $res->end('服务器超时');
-            }
-        } finally {
-            $this->onRequestEnd();
-        }
-    }
-
-    /**
-     * 获取当前请求的任务ID,主要针对Timer
-     * @param $request
-     * @return string
-     */
-    private function getRequestTimeoutJobId($request)
-    {
-        return spl_object_hash($request) . '_handle_timeout';
     }
 }

@@ -21,6 +21,14 @@ class ErrorHandler extends \yii\web\ErrorHandler
     //不需要预先分配内存了
     public $memoryReserveSize = 0;
 
+    public function register()
+    {
+        ini_set('display_errors', false);
+        //set_exception_handler([$this, 'handleException']);
+        set_error_handler([$this, 'handleError']);
+        register_shutdown_function([$this, 'handleFatalError']);
+    }
+
     public function handleException($exception)
     {
         if ($exception instanceof ExitException) {
@@ -104,7 +112,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
                     return true;
                 }
             }
-
             throw $exception;
         }
         return false;

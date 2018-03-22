@@ -94,16 +94,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
                         'scriptFile' => __DIR__ . '/../web/index.php',
                         'scriptUrl' => '/index.php',
                     ],
-                    'messenger' => [
-                        'class' => 'app\modules\message\Messenger',
-                        'channels' => [
-                            'sms' => [
-                                'class' => 'app\modules\message\provider\QCloudSms',
-                                'appId' => '1400002656',
-                                'appKey' => '330b875d63666915cdd1a01d6d530ef6'
-                            ],
-                        ],
-                    ]
                 ]
             ], $configs);
         $this->setCurrentUser();

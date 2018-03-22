@@ -48,38 +48,6 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * @throws \Exception
-     */
-    public function run()
-    {
-        try {
-
-            $this->beforeRun();
-
-            $this->state = self::STATE_BEFORE_REQUEST;
-            $this->trigger(self::EVENT_BEFORE_REQUEST);
-
-            $this->state = self::STATE_HANDLING_REQUEST;
-            $response = $this->handleRequest($this->getRequest());
-
-            $this->state = self::STATE_AFTER_REQUEST;
-            $this->trigger(self::EVENT_AFTER_REQUEST);
-
-            $this->state = self::STATE_SENDING_RESPONSE;
-
-            $response->send();
-
-            $this->state = self::STATE_END;
-
-            return $response->exitStatus;
-
-        } catch (ExitException $e) {
-            $this->end($e->statusCode, isset($response) ? $response : null);
-            return $e->statusCode;
-        }
-    }
-
-    /**
      * 在run开始前执行配置文件启动组件
      */
     public function beforeRun()

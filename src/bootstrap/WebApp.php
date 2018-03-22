@@ -11,7 +11,7 @@ namespace tsingsun\swoole\bootstrap;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use tsingsun\swoole\web\Application;
-use tsingsun\swoole\web\ErrorHandler;
+use yii\base\ExitException;
 use Yii;
 use yii\base\Event;
 
@@ -29,23 +29,44 @@ class WebApp extends BaseBootstrap
      */
     public function handleRequest($request, $response)
     {
-        try {
-            $app = new Application($this->appConfig);
-            $app->getRequest()->setSwooleRequest($request);
-            $app->getResponse()->setSwooleResponse($response);
-            $app->on(Application::EVENT_AFTER_RUN, [$this, 'onHandleRequestEnd']);
+        $app = new Application($this->appConfig);
+        $app->getRequest()->setSwooleRequest($request);
+        $app->getResponse()->setSwooleResponse($response);
+        $app->on(Application::EVENT_AFTER_RUN, [$this, 'onHandleRequestEnd']);
 
-            $status = $app->run();
+        try {
+
+            $app->beforeRun();
+
+            $app->state = Application::STATE_BEFORE_REQUEST;
+            $app->trigger(Application::EVENT_BEFORE_REQUEST);
+
+            $this->state = Application::STATE_HANDLING_REQUEST;
+            $response = $app->handleRequest($app->getRequest());
+
+            $app->state = Application::STATE_AFTER_REQUEST;
+            $app->trigger(Application::EVENT_AFTER_REQUEST);
+
+            $app->state = Application::STATE_SENDING_RESPONSE;
+
+            $response->send();
+
             $app->trigger(Application::EVENT_AFTER_RUN);
-            return $status == 0;
-        } catch (\Exception $e) {
-            $app->getErrorHandler()->handleException($e);
+
+            $app->state = Application::STATE_END;
+
+            return $response->exitStatus;
+
+        } catch (ExitException $e) {
+            $app->end($e->statusCode, isset($response) ? $response : null);
+            $app->state = -1;
+            return $e->statusCode;
+        } catch (\Exception $exception) {
+            $app->getErrorHandler()->handleException($exception);
+            $app->state = -1;
             return false;
-        } catch (\Throwable $e) {
-            $eh = $app->getErrorHandler();
-            if ($eh instanceof ErrorHandler) {
-                $eh->handleFatalError(true);
-            }
+        } catch (\Throwable $throwable) {
+            $app->getErrorHandler()->handleError($throwable->getCode(),$throwable->getMessage(),$throwable->getFile(),$throwable->getLine());
             return false;
         }
     }
@@ -60,6 +81,9 @@ class WebApp extends BaseBootstrap
         $app = $event->sender;
         if ($app->has('session', true)) {
             $app->getSession()->close();
+        }
+        if($app->state == -1){
+            $app->getLog()->logger->flush(true);
         }
     }
 

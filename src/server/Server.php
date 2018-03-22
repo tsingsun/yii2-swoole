@@ -36,6 +36,7 @@ class Server
     public $port = 9501;
     /**
      * @var int 请求超时设置,以秒为单位
+     * @deprecated 该设置不再有
      */
     public $timeout = 0;
     /**

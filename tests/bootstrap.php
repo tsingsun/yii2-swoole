@@ -13,11 +13,13 @@ if (is_dir(__DIR__ . '/../vendor/')) {
     $vendorRoot = __DIR__ . '/../../..'; //this extension is part of a project vendor folder
 }
 require_once($vendorRoot . '/autoload.php');
-require_once(__DIR__ . '/../src/Yii.php');
-
 if (\Swoole\Coroutine::getuid() > 1) {
     define('COROUTINE_ENV', true);
+} else {
+    define('COROUTINE_ENV', false);
 }
+require_once(__DIR__ . '/../src/Yii.php');
+
 Yii::setAlias('@tsingsun/swoole', __DIR__ . '/../src/');
 //Yii::setAlias('@app', __DIR__ . '/../');
 Yii::setAlias('@yiiunit/extension/swoole', __DIR__ . '/');
