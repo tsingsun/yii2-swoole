@@ -23,7 +23,7 @@ return [
     ],
 ];
 ```
-2.  启动文件,一般放置在web目录下.如命名为http_server.php,如:
+2.  启动文件:
 ```php
 defined('WEBROOT') or define('WEBROOT', __DIR__);
 

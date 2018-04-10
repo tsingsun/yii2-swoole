@@ -22,5 +22,9 @@
 
 在协程环境下,当触发协程时,会与xdebug产生冲突,导致无法断点只能用log查问题,希望swoole能在调试便利性上下功能.
 
+### bootstrap
+
+在swoole中，尽量不要使用yii的boostrap配置，目前仅对ContentNegotiator做了测试。不保证其他引导组件有效.
+
 
 
