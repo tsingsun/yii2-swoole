@@ -11,6 +11,8 @@ use \tsingsun\swoole\server\Server;
 defined('WEBROOT') or define('WEBROOT', __DIR__.'/web');
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 defined('YII_ENV') or define('YII_ENV', 'dev');
+//是否开启协程,请严格根据您的环境配置
+defined('COROUTINE_ENV') or define('COROUTINE_ENV', false);
 
 require(__DIR__ . '/../../vendor/autoload.php');
 $config = [
@@ -24,6 +26,7 @@ $config = [
         'pid_file' => __DIR__ . '/runtime/testHttp.pid',
         'log_file' => __DIR__.'/runtime/logs/swoole.log',
         'debug_mode'=> 1,
+        'enable_coroutine' => COROUTINE_ENV
     ],
 ];
 

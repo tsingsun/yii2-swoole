@@ -1,26 +1,16 @@
 <?php
 
 use \tsingsun\swoole\server\Server;
-/**
- * Created by PhpStorm.
- * User: tsingsun
- * Date: 2017/2/28
- * Time: 上午11:15
- */
-//路径根据实际文件位置
+
 defined('WEBROOT') or define('WEBROOT', __DIR__);
-defined('YII_DEBUG') or define('YII_DEBUG', true);
-defined('YII_ENV') or define('YII_ENV', 'dev');
-defined('COROUTINE_ENV') or define('COROUTINE_ENV', true);
 
 require(__DIR__ . '/../../vendor/autoload.php');
 $config = [
-    'class'=>'tsingsun\swoole\server\HttpServer',
-    'timeout'=>2,
+    'class'=>'tsingsun\swoole\server\WebSocketServer',
+    'serverType'=>'websocket',
+    'port'=>9502,
     'setting' => [
         'daemonize'=>0,
-        'max_coro_num'=>300,
-        'reactor_num'=>1,
         'worker_num'=>1,
         'pid_file' => __DIR__ . '/../runtime/testHttp.pid',
         'log_file' => __DIR__.'/../runtime/logs/swoole.log',
@@ -31,11 +21,11 @@ $config = [
 ];
 
 Server::run($config,function (Server $server){
-    $starter = new \tsingsun\swoole\bootstrap\WebApp($server);
+    $starter = new \tsingsun\swoole\bootstrap\WebSocketApp($server);
     //初始化函数独立,为了在启动时,不会加载Yii相关的文件,在库更新时采用reload平滑启动服务器
-    $starter->init = function (\tsingsun\swoole\bootstrap\BaseBootstrap $bootstrap) {
-        require(__DIR__ . '/../vendor/tsingsun/yii2-swoole/src/Yii.php');
-        //原项目的配置文件
+    $starter->init = function ($bootstrap) {
+        require(__DIR__ . '/../../src/Yii.php');
+
         $config = yii\helpers\ArrayHelper::merge(
             require(__DIR__ . '/../config/main.php'),
             require(__DIR__ . '/../config/main-local.php')
@@ -44,6 +34,16 @@ Server::run($config,function (Server $server){
         Yii::setAlias('@web', '/');
         $bootstrap->appConfig = $config;
     };
+    $starter->formatData = function ($data) {
+
+        if($data instanceof \yii\web\ForbiddenHttpException){
+            return ['errors' => [['code' => $data->getCode(), 'message' => $data->getMessage()]]];
+        } elseif($data instanceof \Throwable){
+            return ['errors' => [['code' => $data->getCode(), 'message' => $data->getMessage()]]];
+        }
+            return json_encode($data);
+    };
     $server->bootstrap = $starter;
+//    $server->getSwoole()->
     $server->start();
 });

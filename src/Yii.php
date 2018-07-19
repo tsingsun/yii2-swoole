@@ -7,9 +7,6 @@
  */
 
 require(__DIR__ . '/BaseYii.php');
-if (COROUTINE_ENV) {
-    require(__DIR__ . '/functionReplace.php');
-}
 
 class Yii extends \tsingsun\swoole\BaseYii
 {

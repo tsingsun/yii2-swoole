@@ -9,10 +9,16 @@
 本项目是基于[php-swoole扩展](http://www.swoole.com)协程版本,使yii2项目运行在swoole上的一个方案.  
 通过本项目扩展,可极大的提高原项目并发性.而且可以通过Yii2的全栈框架开发TCP,UDP,WebSocket等网络服务.  
 
+基于Swoole4版本后,协程的切换更方便了,也使代码中不需要再使用call_user_func替换.yii2-swoole的适应能力越来越强了.
+
 ## 安装
+swoole4请直接使用
 ```php
     composer require tsingsun/yii2-swoole
 ```
+
+如果您使用的是swoole2版本请使用1.0版本
+
 ## 特点
 
 - 高度兼容Yii2项目,不需要改变项目代码.
@@ -35,7 +41,7 @@ use \tsingsun\swoole\server\Server;
 defined('WEBROOT') or define('WEBROOT', __DIR__);
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 defined('YII_ENV') or define('YII_ENV', 'dev');
-//协程与非协程的切换
+//协程开关,请严格根据您的环境配置
 defined('COROUTINE_ENV') or define('COROUTINE_ENV', true);
 
 require(__DIR__ . '/../../vendor/autoload.php');
@@ -53,6 +59,8 @@ $config = [
         'debug_mode'=> 1,
         'user'=>'tsingsun',
         'group'=>'staff',
+        // 4.0 新增选项
+        'enable_coroutine' => COROUTINE_ENV
     ],
 ];
 
@@ -98,7 +106,7 @@ php http_server.php stop
   - 启用task时,如果断点于task中,则调试请求会被阻塞
   - 如果出现页面信息输出至控制台,一般是被直接echo了,可跟踪各输出出口.
 
-> 由于swoole2.0与xdebug产生冲突(主要是一些协程的客户端类上),导致无法在IDE中调试,比较好的实践应该是在普通PHP环境下开发好,在swoole环境再测试
+> 由于swoole2.0以上与xdebug产生冲突(主要是一些协程的客户端类上),导致无法在IDE中调试,比较好的实践应该是在普通PHP环境下开发好,在swoole环境再测试
 
 ## 受限
 
