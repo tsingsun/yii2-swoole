@@ -28,8 +28,6 @@ swoole4请直接使用
 - 本地化mysql,redis连接池(协程环境下,非协程链接池意义不大).
 - 实现了在swoole下的session功能.
 
-> 如果你想简单的实现swoole,那可以直接采用非协程环境.在协程环境下时可能还需要做call_user_func的函数替换.
-
 ## 使用方法
 
 - swoole启动文件    
