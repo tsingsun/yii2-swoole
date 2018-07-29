@@ -119,6 +119,6 @@ php http_server.php stop
 一些组件的改写说明请参阅[组件改写说明](doc/component_changes.md)
 
 ### 联系我
-QQ: 21997272  
+QQ: 21997272  Q群: 785966704
 如果你觉得对您有帮助,欢迎红包鼓励^_^
 ![支付宝](doc/images/a6x00263kcgmmg3ayg4qb8e.png)
