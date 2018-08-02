@@ -196,6 +196,7 @@ class Command extends \yii\db\Command
         }
         return false;
     }
+
     public function prepare($forRead = null)
     {
         if ($this->pdoStatement) {
@@ -229,6 +230,7 @@ class Command extends \yii\db\Command
             throw new Exception($message, $errorInfo, (int) $e->getCode(), $e);
         }
     }
+
     public function queryInternal($method, $fetchMode = null, $reconnect = 0)
     {
         $rawSql       = $this->getRawSql();
@@ -290,6 +292,7 @@ class Command extends \yii\db\Command
         }
         return $result;
     }
+
     public function execute()
     {
         $sql = $this->getSql();
