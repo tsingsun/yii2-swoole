@@ -161,5 +161,6 @@ class Connection extends \yii\redis\Connection
             $connection = $this->hostname . ':' . $this->port . ', database=' . $this->database;
             $this->poolKey = md5($connection);
         }
+        return $this->poolKey;
     }
 }
