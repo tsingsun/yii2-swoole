@@ -18,7 +18,7 @@ class Connection extends \yii\redis\Connection
     /**
      * @var string redis pool key
      */
-    private $poolKey;
+    public $poolKey;
     /**
      * @var Redis
      */

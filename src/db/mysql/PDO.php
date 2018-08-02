@@ -99,7 +99,11 @@ class PDO extends \PDO
         if ($this->client->connected === false) {
             $token = 'Opening DB connection: ' . $this->dsn;
             \Yii::info($token,__METHOD__);
-            $this->client->connect($this->config);
+            $ok = $this->client->connect($this->config);
+            if (!$ok) {
+                $this->releaseConnect();
+                throw new PDOException("can't connect to mysql");
+            }
         }
         return $this->client;
     }
@@ -196,8 +200,6 @@ class PDO extends \PDO
 
     /**
      * 释放链接
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\di\NotInstantiableException
      */
     public function releaseConnect()
     {
