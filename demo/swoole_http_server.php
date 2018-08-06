@@ -34,7 +34,7 @@ Server::run($config,function (Server $server){
     $starter = new \tsingsun\swoole\bootstrap\WebApp($server);
     //初始化函数独立,为了在启动时,不会加载Yii相关的文件,在库更新时采用reload平滑启动服务器
     $starter->init = function (\tsingsun\swoole\bootstrap\BaseBootstrap $bootstrap) {
-        require(__DIR__ . '/../src/Yii.php');
+        require(__DIR__ . '/yii2-app-basic/vendor/tsingsun/yii2-swoole/src/Yii.php');
 
 //        $config = require(__DIR__ . '/yii2-app-basic/config/web.php');
         //if you has local config

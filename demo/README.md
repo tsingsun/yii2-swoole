@@ -9,5 +9,13 @@ DEMO
   -- swoole_http_server.php app-basic的swoole启动文件
 -- vendor
 ```
-
-出于权限安全,启动脚本不建议放置在web目录下.
+### 注意事项
+* 出于权限安全,启动脚本不建议放置在web目录下.
+* swoole对session有变更，所以请先调整session配置
+```
+'components'=>
+    'session' => [
+        //默认cache
+        'class' => 'yii\web\CacheSession',
+    ],
+```

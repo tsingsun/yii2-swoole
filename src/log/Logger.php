@@ -49,8 +49,9 @@ class Logger extends \yii\log\Logger
             $message = (string) $message;
         }
         $this->messages[] = [$message, $level, $category, $time, $traces, memory_get_usage()];
-        if ($this->flushInterval > 0 && count($this->messages) >= $this->flushInterval) {
-            $this->flush();
+        $isErr = $level == \yii\log\Logger::LEVEL_ERROR;
+        if (($this->flushInterval > 0 && count($this->messages) >= $this->flushInterval) || $isErr ) {
+            $this->flush($isErr);
         }
     }
 }
