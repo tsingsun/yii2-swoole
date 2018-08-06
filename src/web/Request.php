@@ -87,8 +87,8 @@ class Request extends \yii\web\Request
             return strtoupper($this->swooleRequest->post[$this->methodParam]);
         }
 
-        if (isset($this->swooleRequest->server['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
-            return strtoupper($this->swooleRequest->server['HTTP_X_HTTP_METHOD_OVERRIDE']);
+        if (isset($this->swooleRequest->header['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
+            return strtoupper($this->swooleRequest->header['HTTP_X_HTTP_METHOD_OVERRIDE']);
         }
 
         if (isset($this->swooleRequest->server['REQUEST_METHOD'])) {
@@ -103,7 +103,7 @@ class Request extends \yii\web\Request
      */
     public function getIsAjax()
     {
-        return isset($this->swooleRequest->server['HTTP_X_REQUESTED_WITH']) && $this->swooleRequest->server['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        return isset($this->swooleRequest->header['X_REQUESTED_WITH']) && $this->swooleRequest->header['X_REQUESTED_WITH'] === 'XMLHttpRequest';
     }
 
     /**
@@ -111,7 +111,7 @@ class Request extends \yii\web\Request
      */
     public function getIsPjax()
     {
-        return $this->getIsAjax() && !empty($this->swooleRequest->server['HTTP_X_PJAX']);
+        return $this->getIsAjax() && !empty($this->swooleRequest->header['X_PJAX']);
     }
 
     /**
@@ -119,8 +119,8 @@ class Request extends \yii\web\Request
      */
     public function getIsFlash()
     {
-        return isset($this->swooleRequest->server['HTTP_USER_AGENT']) &&
-            (stripos($this->swooleRequest->server['HTTP_USER_AGENT'], 'Shockwave') !== false || stripos($this->swooleRequest->server['HTTP_USER_AGENT'], 'Flash') !== false);
+        return isset($this->swooleRequest->header['USER_AGENT']) &&
+            (stripos($this->swooleRequest->header['USER_AGENT'], 'Shockwave') !== false || stripos($this->swooleRequest->header['USER_AGENT'], 'Flash') !== false);
     }
 
     private $_rawBody;

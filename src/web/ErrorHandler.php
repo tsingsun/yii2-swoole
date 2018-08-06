@@ -121,16 +121,14 @@ class ErrorHandler extends \yii\web\ErrorHandler
      * 重写基类的,本方法在swoole进程异常退出时触发.
      * @param bool $isShow
      */
-    public function handleFatalError($isShow = false)
+    function handleFatalError()
     {
 //        unset($this->_memoryReserve);
 
         // load ErrorException manually here because autoloading them will not work
         // when error occurs while autoloading a class
-        if($isShow){
-            if (!class_exists('yii\\base\\ErrorException', false)) {
-                require_once(\Yii::getAlias('@yii/base/ErrorException.php'));
-            }
+        if (!class_exists('yii\\base\\ErrorException', false)) {
+            require_once(\Yii::getAlias('@yii/base/ErrorException.php'));
         }
 
         $error = error_get_last();
@@ -140,12 +138,10 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $this->exception = $exception;
 
             $this->logException($exception);
-            if($isShow){
-                if ($this->discardExistingOutput) {
-                    $this->clearOutput();
-                }
-                @$this->renderException($exception);
+            if ($this->discardExistingOutput) {
+                $this->clearOutput();
             }
+            @$this->renderException($exception);
 
         }
     }

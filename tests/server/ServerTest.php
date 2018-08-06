@@ -15,7 +15,7 @@ use tsingsun\swoole\server\Server;
 class ServerTest extends TestCase
 {
     function testAutoCreate(){
-        $config = require \Yii::getAlias('@swooleunit/config/swoole.php');
-        Server::autoCreate(reset($config));
+        $config = require __DIR__.'/../config/swoole.php';
+        Server::autoCreate($config);
     }
 }

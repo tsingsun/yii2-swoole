@@ -120,5 +120,5 @@ php http_server.php stop
 
 ### 联系我
 QQ: 21997272  Q群: 785966704
-如果你觉得对您有帮助,欢迎红包鼓励^_^
+如果你觉得对您有帮助,可以请我喝咖啡鼓励下我^_^
 ![支付宝](doc/images/a6x00263kcgmmg3ayg4qb8e.png)
