@@ -106,6 +106,26 @@ php http_server.php stop
 
 > 由于swoole2.0以上与xdebug产生冲突(主要是一些协程的客户端类上),导致无法在IDE中调试,比较好的实践应该是在普通PHP环境下开发好,在swoole环境再测试
 
+### 配合Nginx
+
+Swoole没有像 传统的中间件与Nginx的紧密,部分参数需要自己往HTTP Header写..在传统$_SERVER中的命名方式保留,防止与Header出现命名冲突.
+```
+server {
+    root /data/wwwroot/;
+    server_name local.swoole.com;
+
+    location / {
+        proxy_http_version 1.1;
+        proxy_set_header Connection "keep-alive";
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header SERVER_NAME $server_name;
+        if (!-e $request_filename) {
+             proxy_pass http://127.0.0.1:9501;
+        }
+    }
+}
+```
+
 ## 受限
 
 原Yii2的部分功能在swoole环境具有一定限制.具体请查阅[限制说明文档](doc/limit.md)  

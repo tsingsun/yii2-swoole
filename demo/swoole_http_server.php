@@ -46,11 +46,12 @@ Server::run($config, function (Server $server) {
         );
         Yii::setAlias('@webroot', WEBROOT);
         Yii::setAlias('@web', '/');
-        //如果需要原生的swoole服务，可以这样
+        //如果需要原生的swoole Server，可以这样
         Yii::$swooleServer = $bootstrap->getServer()->getSwoole();
         $bootstrap->appConfig = $config;
 
     };
+    //如果需要swoole Server
     $server->getSwoole()->on("Task", function (swoole_server $serv, $task_id, $from_id, $data) {
         echo "Tasker进程接收到数据";
         echo "#{$serv->worker_id}\tonTask: [PID={$serv->worker_pid}]: task_id=$task_id, data_len=" . strlen($data) . "." . PHP_EOL;

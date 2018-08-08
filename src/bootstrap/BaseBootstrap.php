@@ -85,7 +85,6 @@ abstract class BaseBootstrap implements BootstrapInterface
             $request->server['REQUEST_URI'] = isset($request->server['request_uri']) ? $request->server['request_uri'] : '';
 
             $request->server = array_change_key_case($request->server, CASE_UPPER);
-            $request->header = array_change_key_case($request->header, CASE_UPPER);
         }
     }
 
