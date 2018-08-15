@@ -14,6 +14,8 @@ use Swoole\WebSocket\Server;
 
 class WebSocketServer extends HttpServer
 {
+    protected $serverType = 'websocket';
+
     public function onOpen(Server $server,$worker_id)
     {
         if($this->bootstrap){

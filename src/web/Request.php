@@ -69,6 +69,7 @@ class Request extends \yii\web\Request
     }
 
     private $_headers;
+
     /**
      * @inheritdoc
      */
@@ -104,6 +105,7 @@ class Request extends \yii\web\Request
     }
 
     private $_rawBody;
+
     /**
      * @inheritdoc
      */
@@ -116,6 +118,7 @@ class Request extends \yii\web\Request
     }
 
     public $_bodyParams;
+
     /**
      * @inheritdoc
      */
@@ -156,13 +159,14 @@ class Request extends \yii\web\Request
     }
 
     private $_queryParams;
+
     /**
      * @inheritdoc
      */
     public function getQueryParams()
     {
         if ($this->_queryParams === null) {
-            $this->_queryParams = $this->swooleRequest->get;
+            $this->_queryParams = $this->swooleRequest ? $this->swooleRequest->get : [];
         }
 
         return $this->_queryParams;
@@ -271,7 +275,7 @@ class Request extends \yii\web\Request
      */
     public function getServerPort()
     {
-        return isset($this->swooleRequest->server['SERVER_PORT']) ? (int) $this->swooleRequest->server['SERVER_PORT'] : null;
+        return isset($this->swooleRequest->server['SERVER_PORT']) ? (int)$this->swooleRequest->server['SERVER_PORT'] : null;
     }
 
     /**
@@ -281,6 +285,7 @@ class Request extends \yii\web\Request
     {
         return isset($this->swooleRequest->server['REMOTE_ADDR']) ? $this->swooleRequest->server['REMOTE_ADDR'] : null;
     }
+
     /**
      * @inheritdoc
      */
@@ -288,6 +293,7 @@ class Request extends \yii\web\Request
     {
         return isset($this->swooleRequest->server['REMOTE_HOST']) ? $this->swooleRequest->server['REMOTE_HOST'] : null;
     }
+
     /**
      * @inheritdoc
      */
