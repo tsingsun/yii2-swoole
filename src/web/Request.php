@@ -224,14 +224,10 @@ class Request extends \yii\web\Request
             if ($requestUri !== '' && $requestUri[0] !== '/') {
                 $requestUri = preg_replace('/^(http|https):\/\/[^\/]+/i', '', $requestUri);
             }
-        } elseif (isset($this->swooleRequest->server['ORIG_PATH_INFO'])) { // IIS 5.0 CGI
-            $requestUri = $this->swooleRequest->server['ORIG_PATH_INFO'];
-            if (!empty($this->swooleRequest->server['QUERY_STRING'])) {
-                $requestUri .= '?' . $this->swooleRequest->server['QUERY_STRING'];
-            }
         } else {
             throw new InvalidConfigException('Unable to determine the request URI.');
         }
+        return $requestUri;
     }
 
     /**
