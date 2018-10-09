@@ -54,6 +54,6 @@ class Session extends \yii\redis\Session
      */
     public function writeSession($id, $data)
     {
-        return (bool)$this->redis->executeCommand('SET', [$this->calculateKey($id), $data, ['EX' => $this->getTimeout()]]);
+        return (bool)$this->redis->executeCommand('SETEX', [$this->calculateKey($id), $this->getTimeout(), $data]);
     }
 }
