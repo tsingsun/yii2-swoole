@@ -29,13 +29,9 @@ class Cache extends \yii\redis\Cache
     protected function addValue($key, $value, $expire)
     {
         if ($expire == 0) {
-            return (bool)$this->redis->executeCommand('SET', [$key, $value, 'NX']);
+            return (bool)$this->redis->executeCommand('SETNX', [$key, $value]);
         } else {
-            $expire = (int)($expire);
-            if ($expire != 0) {
-                return (bool)$this->redis->executeCommand('SETEX', [$key, $expire, $value]);
-            }
-            return (bool)$this->redis->executeCommand('SETNX', [$key, $value, 'PX', $expire, 'NX']);
+            return (bool) $this->redis->executeCommand('SET', [$key, $value, ['NX','EX'=>$expire]]);
         }
     }
 }

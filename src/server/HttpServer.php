@@ -40,18 +40,8 @@ class HttpServer extends Server
             $this->bootstrap->onRequest($request, $response);
         } elseif ($uri != '/' and $pathinfo != 'php' and is_file($file)) {
             // 非php文件, 最好使用nginx来输出
-            $size = filesize($file);
             $response->header('Content-Type', FileHelper::getMimeTypeByExtension($file));
-            $response->header('Content-Length', $size);
-            //todo sendfile性能可能存在问题，用end来处理小文件。
-            if ($size > 2097152) {
-                //防止swoole warning
-                $response->sendfile($file);
-            } elseif ($size == 0) {
-                $response->end();
-            } else {
-                $response->end(file_get_contents($file));
-            }
+            $response->sendfile($file);
         } elseif ($uri != '/' && $uri != $this->index) {
             //站点目录下的其他PHP文件
             $this->handleDynamic($file, $request, $response);
