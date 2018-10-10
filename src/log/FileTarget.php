@@ -64,7 +64,7 @@ class FileTarget extends \yii\log\FileTarget
         foreach ($context as $key => $value) {
             //vardumper有性能问题及导致进程退出,var_export,但都能看
             //$result[] = "\${$key} = " . VarDumper::dumpAsString($value);
-            $result[] = "\${$key} = " . var_export($value);
+            $result[] = "\${$key} = " . var_export($value,true);
         }
         return implode("\n\n", $result);
     }

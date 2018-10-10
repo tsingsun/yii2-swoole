@@ -44,7 +44,8 @@ class Application extends \yii\web\Application
     public function init()
     {
         $this->state = self::STATE_INIT;
-        $this->bootstrap();
+        // 改在初始后,通过beforeRun引导
+//        parent::bootstrap();
     }
 
     /**
@@ -52,14 +53,22 @@ class Application extends \yii\web\Application
      */
     public function beforeRun()
     {
-        $this->runComponentBootstrap();
+        $this->bootstrap();
     }
 
     /**
      * 重写引导组件方法
-     * @throws InvalidConfigException
      */
     protected function bootstrap()
+    {
+        if (!self::$_hasBootstrap) {
+            $this->splitBootstrap();
+            self::$_hasBootstrap = true;
+        }
+        $this->runComponentBootstrap();
+    }
+
+    protected function splitBootstrap()
     {
         if (!self::$_hasBootstrap) {
             if ($this->extensions === null) {

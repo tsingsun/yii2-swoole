@@ -26,6 +26,11 @@ class Request extends \yii\web\Request
      */
     public $swooleRequest;
 
+    public $ipHeaders = [
+        'X-Forwarded-For', // Common
+        'X-Real-Ip',
+    ];
+
     /**
      * 设置swoole请求,并清理变量
      * @param \Swoole\Http\Request $request
@@ -64,6 +69,7 @@ class Request extends \yii\web\Request
     }
 
     private $_headers;
+
     /**
      * @inheritdoc
      */
@@ -87,8 +93,8 @@ class Request extends \yii\web\Request
             return strtoupper($this->swooleRequest->post[$this->methodParam]);
         }
 
-        if (isset($this->swooleRequest->server['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
-            return strtoupper($this->swooleRequest->server['HTTP_X_HTTP_METHOD_OVERRIDE']);
+        if ($this->headers->has('X-Http-Method-Override')) {
+            return strtoupper($this->headers->get('X-Http-Method-Override'));
         }
 
         if (isset($this->swooleRequest->server['REQUEST_METHOD'])) {
@@ -98,32 +104,8 @@ class Request extends \yii\web\Request
         return 'GET';
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getIsAjax()
-    {
-        return isset($this->swooleRequest->server['HTTP_X_REQUESTED_WITH']) && $this->swooleRequest->server['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsPjax()
-    {
-        return $this->getIsAjax() && !empty($this->swooleRequest->server['HTTP_X_PJAX']);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsFlash()
-    {
-        return isset($this->swooleRequest->server['HTTP_USER_AGENT']) &&
-            (stripos($this->swooleRequest->server['HTTP_USER_AGENT'], 'Shockwave') !== false || stripos($this->swooleRequest->server['HTTP_USER_AGENT'], 'Flash') !== false);
-    }
-
     private $_rawBody;
+
     /**
      * @inheritdoc
      */
@@ -136,6 +118,7 @@ class Request extends \yii\web\Request
     }
 
     public $_bodyParams;
+
     /**
      * @inheritdoc
      */
@@ -176,13 +159,14 @@ class Request extends \yii\web\Request
     }
 
     private $_queryParams;
+
     /**
      * @inheritdoc
      */
     public function getQueryParams()
     {
         if ($this->_queryParams === null) {
-            $this->_queryParams = $this->swooleRequest->get;
+            $this->_queryParams = $this->swooleRequest ? $this->swooleRequest->get : [];
         }
 
         return $this->_queryParams;
@@ -233,7 +217,9 @@ class Request extends \yii\web\Request
      */
     protected function resolveRequestUri()
     {
-        if (isset($this->swooleRequest->server['REQUEST_URI'])) {
+        if ($this->headers->has('X-Rewrite-Url')) { // IIS
+            $requestUri = $this->headers->get('X-Rewrite-Url');
+        } elseif (isset($this->swooleRequest->server['REQUEST_URI'])) {
             $requestUri = $this->swooleRequest->server['REQUEST_URI'];
             if ($requestUri !== '' && $requestUri[0] !== '/') {
                 $requestUri = preg_replace('/^(http|https):\/\/[^\/]+/i', '', $requestUri);
@@ -241,7 +227,6 @@ class Request extends \yii\web\Request
         } else {
             throw new InvalidConfigException('Unable to determine the request URI.');
         }
-
         return $requestUri;
     }
 
@@ -258,8 +243,19 @@ class Request extends \yii\web\Request
      */
     public function getIsSecureConnection()
     {
-        return isset($this->swooleRequest->server['HTTPS']) && (strcasecmp($this->swooleRequest->server['HTTPS'], 'on') === 0 || $_SERVER['HTTPS'] == 1)
-            || isset($this->swooleRequest->server['HTTP_X_FORWARDED_PROTO']) && strcasecmp($this->swooleRequest->server['HTTP_X_FORWARDED_PROTO'], 'https') === 0;
+        if (isset($this->swooleRequest->server['HTTPS']) && (strcasecmp($this->swooleRequest->server['HTTPS'], 'on') === 0 || $this->swooleRequest->server['HTTPS'] == 1)) {
+            return true;
+        }
+        foreach ($this->secureProtocolHeaders as $header => $values) {
+            if (($headerValue = $this->headers->get($header, null)) !== null) {
+                foreach ($values as $value) {
+                    if (strcasecmp($headerValue, $value) === 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -267,7 +263,7 @@ class Request extends \yii\web\Request
      */
     public function getServerName()
     {
-        return isset($this->swooleRequest->server['SERVER_NAME']) ? $this->swooleRequest->server['SERVER_NAME'] : null;
+        return $this->headers->get('SERVER_NAME');
     }
 
     /**
@@ -275,29 +271,13 @@ class Request extends \yii\web\Request
      */
     public function getServerPort()
     {
-        return isset($this->swooleRequest->server['SERVER_PORT']) ? (int) $this->swooleRequest->server['SERVER_PORT'] : null;
+        return isset($this->swooleRequest->server['SERVER_PORT']) ? (int)$this->swooleRequest->server['SERVER_PORT'] : null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getReferrer()
-    {
-        return isset($this->swooleRequest->server['HTTP_REFERER']) ? $this->swooleRequest->server['HTTP_REFERER'] : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getUserAgent()
-    {
-        return isset($this->swooleRequest->server['HTTP_USER_AGENT']) ? $this->swooleRequest->server['HTTP_USER_AGENT'] : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getUserIP()
+    public function getRemoteIP()
     {
         return isset($this->swooleRequest->server['REMOTE_ADDR']) ? $this->swooleRequest->server['REMOTE_ADDR'] : null;
     }
@@ -305,7 +285,7 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function getUserHost()
+    public function getRemoteHost()
     {
         return isset($this->swooleRequest->server['REMOTE_HOST']) ? $this->swooleRequest->server['REMOTE_HOST'] : null;
     }
@@ -313,31 +293,22 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function getAuthUser()
+    public function getAuthCredentials()
     {
-        return isset($this->swooleRequest->server['PHP_AUTH_USER']) ? $this->swooleRequest->server['PHP_AUTH_USER'] : null;
-    }
+        $auth_token = $this->getHeaders()->get('Authorization');
+        if ($auth_token !== null && strncasecmp($auth_token, 'basic', 5) === 0) {
+            $parts = array_map(function ($value) {
+                return strlen($value) === 0 ? null : $value;
+            }, explode(':', base64_decode(mb_substr($auth_token, 6)), 2));
 
-    /**
-     * @inheritdoc
-     */
-    public function getAuthPassword()
-    {
-        return isset($this->swooleRequest->server['PHP_AUTH_PW']) ? $this->swooleRequest->server['PHP_AUTH_PW'] : null;
-    }
+            if (count($parts) < 2) {
+                return [$parts[0], null];
+            }
 
-    private $_port;
-
-    /**
-     * @inheritdoc
-     */
-    public function getPort()
-    {
-        if ($this->_port === null) {
-            $this->_port = !$this->getIsSecureConnection() && isset($this->swooleRequest->server['SERVER_PORT']) ? (int) $this->swooleRequest->server['SERVER_PORT'] : 80;
+            return $parts;
         }
 
-        return $this->_port;
+        return [null, null];
     }
 
     /**
@@ -346,7 +317,6 @@ class Request extends \yii\web\Request
     public function clear()
     {
         $this->_headers = null;
-        $this->_port = null;
         $this->_bodyParams = null;
         $this->_queryParams = null;
         $this->_rawBody = null;

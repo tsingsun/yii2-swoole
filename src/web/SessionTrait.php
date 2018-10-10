@@ -45,6 +45,7 @@ trait SessionTrait
 
     public function destroy()
     {
+        $this->session = [];
         if ($this->getIsActive()) {
             $this->destroySession($this->getId());
         }
@@ -371,7 +372,7 @@ trait SessionTrait
     {
         //7.1,有新的方法
         if (version_compare(PHP_VERSION, '7.1', '<')) {
-            $sid = md5($_SERVER['REMOTE_ADDR'] . microtime() . rand(0, 100000));
+            $sid = md5(Yii::$app->getRequest()->getUserIP() . microtime() . rand(0, 100000));
         } else {
             $sid = session_create_id();
         }

@@ -1,6 +1,6 @@
 # Created by .ignore support plugin (hsz.mobi)
-*.*
+*
 !.gitignore
 !README.md
 !/http_server_common.php
-!/http_server_coroutine.php
+!/swoole_http_server.php

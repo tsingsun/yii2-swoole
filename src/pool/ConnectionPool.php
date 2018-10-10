@@ -53,7 +53,6 @@ abstract class ConnectionPool extends Component
             $connect = $this->createConnect();
         }elseif($retry < 3) {
             //重试3次
-            echo $retry;
             \Swoole\Coroutine::sleep($this->waitTime);
             $connect = $this->getConnect(++$retry);
         }

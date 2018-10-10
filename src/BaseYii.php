@@ -15,4 +15,8 @@ class BaseYii extends \yii\BaseYii
      * @var \tsingsun\swoole\di\Context
      */
     public static $context;
+    /**
+     * @var \Swoole\Server
+     */
+    public static $swooleServer;
 }

@@ -30,6 +30,7 @@ class Container extends \yii\di\Container
         'yii\db\Command' => 'tsingsun\swoole\db\Command',
         'yii\db\Connection' => 'tsingsun\swoole\db\Connection',
         'yii\redis\Connection' => 'tsingsun\swoole\redis\Connection',
+        'yii\redis\Cache' => 'tsingsun\swoole\redis\Cache',
         'yii\redis\Session' => 'tsingsun\swoole\redis\Session',
     ];
 

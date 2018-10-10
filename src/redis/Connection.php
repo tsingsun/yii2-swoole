@@ -18,7 +18,7 @@ class Connection extends \yii\redis\Connection
     /**
      * @var string redis pool key
      */
-    private $poolKey;
+    public $poolKey;
     /**
      * @var Redis
      */
@@ -117,13 +117,13 @@ class Connection extends \yii\redis\Connection
                 return $client;
             };
             $config = [
-                'hostname'=>$this->hostname,
-                'port'=>$this->port,
-                'database'=> $this->database,
-                'connectionTimeout'=> $this->connectionTimeout ? $this->connectionTimeout : ini_get('default_socket_timeout'),
-                'password'=>$this->password,
+                'hostname' => $this->hostname,
+                'port' => $this->port,
+                'database' => $this->database,
+                'connectionTimeout' => $this->connectionTimeout ? $this->connectionTimeout : ini_get('default_socket_timeout'),
+                'password' => $this->password,
             ];
-            $dbPool->reConnectHandle = function (Redis $client)use($config){
+            $dbPool->reConnectHandle = function (Redis $client) use ($config) {
                 $connection = $config['hostname'] . ':' . $config['port'] . ', database=' . $config['database'];
                 $isConnected = $client->connect(
                     $config['hostname'],
@@ -135,15 +135,15 @@ class Connection extends \yii\redis\Connection
                     $message = YII_DEBUG ? "Failed to open redis DB connection ($connection): {$client->errCode} - {$client->errMsg}" : 'Failed to open DB connection.';
                     throw new \Exception($message, (int)$client->errCode);
                 }
-                if ($config['password'] !== null){
+                if ($config['password'] !== null) {
                     \Yii::trace("Executing Redis Command: AUTH", __METHOD__);
-                    if($client->auth($config['password']) === false){
+                    if ($client->auth($config['password']) === false) {
                         throw new \Exception('incorrect password for redis', $client->errCode);
                     }
                 }
                 if ($config['database'] !== null) {
                     \Yii::trace("Executing Redis Command: SELECT {$config['database']}", __METHOD__);
-                    if($client->select($config['database']) === false){
+                    if ($client->select($config['database']) === false) {
                         throw new \Exception("incorrect database index:{$config['database']} in redis", $client->errCode);
                     }
                 }
@@ -157,9 +157,10 @@ class Connection extends \yii\redis\Connection
 
     protected function buildPoolKey()
     {
-        if(!$this->poolKey){
+        if (!$this->poolKey) {
             $connection = $this->hostname . ':' . $this->port . ', database=' . $this->database;
             $this->poolKey = md5($connection);
         }
+        return $this->poolKey;
     }
 }

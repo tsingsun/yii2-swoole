@@ -41,7 +41,11 @@ class PDOStatement extends \PDOStatement
     public function execute($input_parameters = null)
     {
         try {
-            $this->data = $this->pdo->getClient()->query($this->getRawSql());
+            $client = $this->pdo->getClient();
+            $this->data = $client->query($this->getRawSql());
+            if ($this->data === false && $client->error != null) {
+                throw new \PDOException($client->error,$client->errno);
+            }
         } finally {
             $this->pdo->releaseConnect();
         }

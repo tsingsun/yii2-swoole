@@ -107,6 +107,9 @@ php http_server.php stop
 请仔细理解[swoole的编程需知](https://wiki.swoole.com/wiki/page/851.html),请求无响应大部分来源于此.     
 对于第三方包的call_user_func或call_user_func_array的处理请参考functionReplace.php的处理
 
+> 请勿在ob_start和ob_get_clean、ob_end_clean中间使用协程API，否则会引起错乱。可将页面渲染与逻辑分离，仅在逻辑代码中使用协程API，在页面渲染（ob系列操作）处理过程中不要使用协程。
+> 在swoole 4中无可问题
+
 ## 改写的组件
 
 为了适应swoole的内存常驻机制,对Yii的一部分组件的进行了改写,尽量的保持用户不产生额外的代码修改,无感迁移.  

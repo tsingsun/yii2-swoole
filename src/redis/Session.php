@@ -44,4 +44,16 @@ class Session extends \yii\redis\Session
             $this->updateFlashCounters();
         }
     }
+
+    /**
+     * Session write handler.
+     * Do not call this method directly.
+     * @param string $id session ID
+     * @param string $data session data
+     * @return bool whether session write is successful
+     */
+    public function writeSession($id, $data)
+    {
+        return (bool)$this->redis->executeCommand('SETEX', [$this->calculateKey($id), $this->getTimeout(), $data]);
+    }
 }

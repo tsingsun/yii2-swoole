@@ -15,7 +15,7 @@
     ],
     "require": {
         "php": ">=7.0",
-        "yiisoft/yii2": "~2.0.12"
+        "yiisoft/yii2": "^2.0"
     },
     "require-dev": {
         "eaglewu/swoole-ide-helper": "dev-master",
@@ -29,5 +29,13 @@
     },
     "suggest": {
         "ext-swoole": "install ext-swoole when use php swoole extension"
+    },
+    "replace": {
+        "bower-asset/jquery": "*",
+        "bower-asset/bootstrap": "*",
+        "bower-asset/inputmask": "*",
+        "bower-asset/punycode": "*",
+        "bower-asset/typeahead.js": "*",
+        "bower-asset/yii2-pjax": "*"
     }
 }

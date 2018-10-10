@@ -51,9 +51,7 @@ class Response extends \yii\web\Response
             parent::sendHeaders();
             return;
         }
-        if (headers_sent()) {
-            return;
-        }
+
         $headers = $this->getHeaders();
         if ($headers->count > 0) {
             foreach ($headers as $name => $values) {
