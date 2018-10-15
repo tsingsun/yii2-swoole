@@ -78,19 +78,14 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $msg .= "\nPrevious exception:\n";
         $msg .= (string)$previousException;
         if (YII_DEBUG) {
-            if (PHP_SAPI === 'cli') {
-                echo $msg . "\n";
-            } else {
-                echo '<pre>' . htmlspecialchars($msg, ENT_QUOTES, Yii::$app->charset) . '</pre>';
-            }
+            $msg = '<pre>' . htmlspecialchars($msg, ENT_QUOTES, Yii::$app->charset) . '</pre>';
         } else {
             $msg = 'An internal server error occurred.';
         }
-//        $msg .= "\n\$_SERVER = " . print_r($_SERVER, true);
-        error_log($msg);
-        if (defined('HHVM_VERSION')) {
-            flush();
-        }
+        $this->clearOutput();
+        /** @var \swoole_http_response $res */
+        $res = Yii::$app->response->getSwooleResponse();
+        $res->end($msg);
     }
 
     public function handleError($code, $message, $file, $line)
