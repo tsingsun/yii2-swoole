@@ -29,13 +29,5 @@
     },
     "suggest": {
         "ext-swoole": "install ext-swoole when use php swoole extension"
-    },
-    "replace": {
-        "bower-asset/jquery": "*",
-        "bower-asset/bootstrap": "*",
-        "bower-asset/inputmask": "*",
-        "bower-asset/punycode": "*",
-        "bower-asset/typeahead.js": "*",
-        "bower-asset/yii2-pjax": "*"
     }
 }
