@@ -98,7 +98,7 @@ php http_server.php stop
 - 运行方式
 
   - [HttpServer](doc/httpServer.md):把swoole当成http服务器运行.   
-  - [WebSocketServer](doc/WebSocketServer.md):实现可以通过controller方式进行websocket服务编写
+  - [WebSocketServer](doc/WebSocketServer.md):[废弃,如需要可直接使用swoole原生,请参考示例配置文件]
   - TCP/UDP Server  --TODO
 
 - 开发调试  

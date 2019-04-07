@@ -11,7 +11,11 @@ namespace tsingsun\swoole\server;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
 
-
+/**
+ * Class WebSocketServer
+ * @package tsingsun\swoole\server
+ * @deprecated please use swoole native web sockect
+ */
 class WebSocketServer extends HttpServer
 {
     protected $serverType = 'websocket';
