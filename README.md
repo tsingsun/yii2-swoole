@@ -11,6 +11,10 @@
 
 基于Swoole4版本后,协程的切换更方便了,也使代码中不需要再使用call_user_func替换.yii2-swoole的适应能力越来越强了.
 
+主版本
+* Yii 2.0.14以上
+* swoole 4.2以上
+
 ## 安装
 swoole4请直接使用
 ```php
@@ -137,6 +141,19 @@ server {
 
 为了适应swoole的内存常驻机制,对Yii的一部分组件的进行了改写,尽量的保持用户不产生额外的代码修改,无感迁移.  
 一些组件的改写说明请参阅[组件改写说明](doc/component_changes.md)
+
+## composer问题
+
+Composer的中国镜像存在问题,如果版本获取有问题时,可以用https://packagist.laravel-china.org
+然后指定composer.json
+```json
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+```
 
 ### 联系我
 QQ: 21997272  Q群: 785966704
