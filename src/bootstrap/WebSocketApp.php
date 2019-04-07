@@ -11,12 +11,18 @@ namespace tsingsun\swoole\bootstrap;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
 use Swoole\Http\Request;
+use tsingsun\swoole\di\Container;
 use tsingsun\swoole\web\Application;
 use yii\base\Event;
 use yii\web\ForbiddenHttpException;
 
 class WebSocketApp extends WebApp
 {
+
+    /**
+     * @var bool whether use http server,if true the OnRequest is like webApp
+     */
+    private $useHttpServer = false;
     /**
      * @var string current message route
      */
@@ -34,6 +40,14 @@ class WebSocketApp extends WebApp
      */
     public $formatData;
 
+    public function onRequest($request, $response)
+    {
+        if ($this->useHttpServer) {
+            return parent::onRequest($request, $response);
+        }
+        return false;
+    }
+
     /**
      * 客户端连接
      * @param Server $ws
@@ -42,8 +56,8 @@ class WebSocketApp extends WebApp
     public function onOpen(Server $ws, Request $request)
     {
         $pathInfo = $request->server['path_info'];
-        $this->dataRoute = $request->server['path_info'] . '/open';
-        $data = $this->onRequest($request, null);
+        $request->server['path_info'] = $pathInfo . '/open';
+        $data = $this->handleWsRequest($request, null);
         $ws->push($request->fd, $this->formatResponse($data));
         if ($data instanceof \Throwable) {
             $ws->close($request->fd);
@@ -58,8 +72,8 @@ class WebSocketApp extends WebApp
      */
     public function onMessage(Server $ws, Frame $frame)
     {
-        $this->parseFrameProtocol($frame);
-        $data = $this->onRequest(null, null);
+        $psd = $this->parseFrameProtocol($frame);
+        $data = $this->handleWsRequest(null, null);
         $ws->push($frame->fd, $data);
     }
 
@@ -67,7 +81,7 @@ class WebSocketApp extends WebApp
     {
         if (isset($this->routes[$fd])) {
             $this->dataRoute = $this->routes[$fd] . '/close';
-            $this->onRequest(null, null);
+            $this->handleWsRequest(null, null);
             unset($this->routes[$fd]);
         }
     }
@@ -82,28 +96,31 @@ class WebSocketApp extends WebApp
         $data = json_decode($frame->data, true);
         if (json_last_error() == JSON_ERROR_NONE) {
             if (isset($data['route']) && isset($data['content'])) {
-                $this->dataRoute = $data['route'];
-                $this->dataContent = $data['content'];
-                return;
+                return [$data['route'],$data['content']];
             }
         }
-        $this->dataRoute = $this->routes[$frame->fd] . '/message';
-        $this->dataContent = $frame->data;
-
+        return [$this->routes[$frame->fd] . '/message',$frame->data];
     }
 
     /**
-     * @inheritdoc
+     * @param Request $request
+     * @param $response
+     * @return \Exception|mixed|\Throwable|ForbiddenHttpException
      */
-    public function handleRequest($request, $response)
+    public function handleWsRequest($request, $response)
     {
+        if (COROUTINE_ENV) {
+            //协程环境每次都初始化容器,以做协程隔离
+            \Yii::$context->setContainer(new Container());
+        }
+
         try {
             $app = new Application($this->appConfig);
             if ($request) {
                 $app->getRequest()->setSwooleRequest($request);
+            } else {
+
             }
-            $app->request->setPathInfo($this->dataRoute);
-            $app->request->setBodyParams($this->dataContent);
             $app->on(Application::EVENT_AFTER_RUN, [$this, 'onHandleRequestEnd']);
 
 //            $app->beforeRun();
@@ -127,6 +144,10 @@ class WebSocketApp extends WebApp
         } catch (\Throwable $t) {
             $app->getErrorHandler()->logException($t);
             return $t;
+        } finally {
+            if (COROUTINE_ENV) {
+                \Yii::$context->removeCurrentCoroutineData();
+            }
         }
     }
 

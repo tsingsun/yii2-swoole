@@ -98,9 +98,9 @@ class PDO extends \PDO
         }
         if ($this->client->connected === false) {
             $token = 'Opening DB connection: ' . $this->dsn;
-            \Yii::info($token,__METHOD__);
-            $ok = $this->client->connect($this->config);
-            if (!$ok) {
+            \Yii::info($token);
+            $this->client->connect($this->config);
+            if ($this->client->connected === false) {
                 $this->releaseConnect();
                 throw new PDOException("can't connect to mysql");
             }
@@ -233,7 +233,7 @@ class PDO extends \PDO
 
     protected function buildPoolKey()
     {
-        if($this->poolKey){
+        if ($this->poolKey) {
             $this->poolKey = md5($this->dsn);
         }
         return $this->poolKey;
