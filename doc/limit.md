@@ -26,5 +26,9 @@
 
 在swoole中，尽量不要使用yii的boostrap配置，目前仅对ContentNegotiator做了测试。不保证其他引导组件有效.
 
+### Mysql
+
+swoole协程mysql可能还存在问题.对于connected的状态维持不准确.使得程序中优雅判断连接状态存在部分问题,采用粗暴的方式进行一次重试连接.
+
 
 
