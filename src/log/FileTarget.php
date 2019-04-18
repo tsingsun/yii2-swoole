@@ -12,7 +12,7 @@ namespace tsingsun\swoole\log;
 use tsingsun\swoole\web\Request;
 use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
-use yii\helpers\VarDumper;
+use Swoole\Coroutine;
 
 /**
  * 使用异步的方式来实现日志写入操作
@@ -42,10 +42,19 @@ class FileTarget extends \yii\log\FileTarget
             @fclose($fp);
             @file_put_contents($this->logFile, $text, FILE_APPEND | LOCK_EX);
         } else {
-            @swoole_async_writefile($this->logFile,$text,null,FILE_APPEND);
+            if (COROUTINE_ENV) {
+                @Coroutine::writeFile($this->logFile,$text,FILE_APPEND);
+            } else {
+                @swoole_async_writefile($this->logFile,$text,null,FILE_APPEND);
+            }
         }
     }
 
+    /**
+     * TODO 格式化参数,有个缺点,当log输出时.都会重复输出问题
+     * @return string
+     * @throws InvalidConfigException
+     */
     protected function getContextMessage()
     {
         if(empty($this->logVars)){

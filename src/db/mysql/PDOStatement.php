@@ -47,7 +47,9 @@ class PDOStatement extends \PDOStatement
                 throw new \PDOException($client->error,$client->errno);
             }
         } finally {
-            $this->pdo->releaseConnect();
+            if (!$this->pdo->inTransaction()) {
+                $this->pdo->releaseConnect();
+            }
         }
         return is_array($this->data);
     }

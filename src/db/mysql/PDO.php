@@ -30,6 +30,10 @@ class PDO extends \PDO
     private $client;
 
     public $options = [];
+    /**
+     * @var bool 是否在事务中
+     */
+    private $inTransaction;
 
     public function __construct($dsn, $username, $passwd, $options)
     {
@@ -96,14 +100,9 @@ class PDO extends \PDO
         if ($this->client === null) {
             $this->client = $this->getConnectionFromPool();
         }
-        if ($this->client->connected === false) {
-            $token = 'Opening DB connection: ' . $this->dsn;
-            \Yii::info($token);
+        if ($this->client->connected == false) {
             $this->client->connect($this->config);
-            if ($this->client->connected === false) {
-                $this->releaseConnect();
-                throw new PDOException("can't connect to mysql");
-            }
+            //TODO SWoole 可能有重连机制,导致connect在已连情况下,重新连接返回False,对Connected状态也是不对的.无法优雅判断是否正常连接.
         }
         return $this->client;
     }
@@ -163,6 +162,7 @@ class PDO extends \PDO
         if (!$this->getClient()->query("begin;")) {
             return false;
         }
+        $this->inTransaction = true;
         return (string)$this->getClient()->sock;
     }
 
@@ -173,7 +173,7 @@ class PDO extends \PDO
     {
         $res = false;
         try {
-            $res = $this->getClient()->query("commit;");
+            $res = $this->client->query("commit;");
         } catch (\Exception $exception) {
             throw $exception;
         } finally {
@@ -189,13 +189,21 @@ class PDO extends \PDO
     {
         $res = false;
         try {
-            $res = $this->getClient()->query("rollback;");
+            $res = $this->client->query("rollback;");
         } catch (\Exception $exception) {
             throw $exception;
         } finally {
             $this->releaseConnect();
         }
         return $res;
+    }
+
+    /**
+     * @return bool
+     */
+    public function inTransaction()
+    {
+        return $this->inTransaction;
     }
 
     /**
