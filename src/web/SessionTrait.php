@@ -9,7 +9,7 @@
 namespace tsingsun\swoole\web;
 
 use Yii;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 
 /**
  * 协程模式下的session处理类
@@ -39,6 +39,7 @@ trait SessionTrait
     public function close()
     {
         if ($this->getIsActive()) {
+            Yii::debug('Session closed in swoole', __METHOD__);
             YII_DEBUG ? $this->sessionWriteClose() : @$this->sessionWriteClose();
         }
     }
@@ -99,6 +100,7 @@ trait SessionTrait
     {
         if ($this->_hasSessionId === null) {
             $name = $this->getName();
+            /** @var Request $request */
             $request = Yii::$app->getRequest();
             $cookie = $request->getSwooleRequest()->cookie;
             if (!empty($cookie[$name]) && ini_get('session.use_cookies')) {
@@ -177,16 +179,17 @@ trait SessionTrait
     /**
      * Sets the session cookie parameters.
      * This method is called by [[open()]] when it is about to open the session.
-     * @throws InvalidParamException if the parameters are incomplete.
+     * @throws InvalidArgumentException if the parameters are incomplete.
      * @see http://us2.php.net/manual/en/function.session-set-cookie-params.php
      */
     private function setCookieParamsInternal()
     {
         $data = $this->getCookieParams();
         if (isset($data['lifetime'], $data['path'], $data['domain'], $data['secure'], $data['httponly'])) {
-            session_set_cookie_params($data['lifetime'], $data['path'], $data['domain'], $data['secure'], $data['httponly']);
+            //swoole 4 该方法会引起问题，不需要,此处只做检查
+            //session_set_cookie_params($data['lifetime'], $data['path'], $data['domain'], $data['secure'], $data['httponly']);
         } else {
-            throw new InvalidParamException('Please make sure cookieParams contains these elements: lifetime, path, domain, secure and httponly.');
+            throw new InvalidArgumentException('Please make sure cookieParams contains these elements: lifetime, path, domain, secure and httponly.');
         }
     }
 
