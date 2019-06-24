@@ -41,7 +41,7 @@ class WebApp extends BaseBootstrap
             $app->state = Application::STATE_BEFORE_REQUEST;
             $app->trigger(Application::EVENT_BEFORE_REQUEST);
 
-            $this->state = Application::STATE_HANDLING_REQUEST;
+            $app->state = Application::STATE_HANDLING_REQUEST;
             $response = $app->handleRequest($app->getRequest());
 
             $app->state = Application::STATE_AFTER_REQUEST;
