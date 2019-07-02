@@ -14,11 +14,6 @@ use yii\helpers\ArrayHelper;
 
 class PDOStatement extends \PDOStatement
 {
-    public function __construct($pdo)
-    {
-        $this->pdo = $pdo;
-    }
-
     /**
      * @var \tsingsun\swoole\db\mysql\PDO
      */
@@ -27,6 +22,16 @@ class PDOStatement extends \PDOStatement
     private $params;
     private $data;
     private $_index = -1;
+    /**
+     * @var int
+     * @see rowCount
+     */
+    private $affected_rows;
+
+    public function __construct($pdo)
+    {
+        $this->pdo = $pdo;
+    }
 
     public function setQueryString($queryString)
     {
@@ -43,6 +48,7 @@ class PDOStatement extends \PDOStatement
         try {
             $client = $this->pdo->getClient();
             $this->data = $client->query($this->getRawSql());
+            $this->affected_rows = $client->affected_rows;
             if ($this->data === false && $client->error != null) {
                 throw new \PDOException($client->error,$client->errno);
             }
@@ -54,9 +60,18 @@ class PDOStatement extends \PDOStatement
         return is_array($this->data);
     }
 
+    /**
+     * swoole并不支持select返回影响数据行
+     * Returns the number of rows affected by the last SQL statement
+     * @link https://php.net/manual/en/pdostatement.rowcount.php
+     * @return int the number of rows.
+     */
     public function rowCount()
     {
-        return count($this->data);
+        if (is_array($this->data)){
+            return count($this->data);
+        }
+        return $this->affected_rows;
     }
 
     public function closeCursor()
