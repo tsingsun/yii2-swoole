@@ -241,7 +241,7 @@ class PDO extends \PDO
 
     protected function buildPoolKey()
     {
-        if ($this->poolKey) {
+        if (!$this->poolKey) {
             $this->poolKey = md5($this->dsn);
         }
         return $this->poolKey;
