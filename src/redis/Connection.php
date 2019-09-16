@@ -30,7 +30,8 @@ class Connection extends \yii\redis\Connection
     /**
      * @var array https://wiki.swoole.com/wiki/page/590.html
      */
-    const NotSupportCMD = ['SCAN','OBJECT','SORT','MIGRATE','HSCAN','SSCAN','ZSCAN'];
+    const NotSupportCMD = ['SCAN', 'OBJECT', 'SORT', 'MIGRATE', 'HSCAN', 'SSCAN', 'ZSCAN'];
+
     /**
      * Returns a value indicating whether the DB connection is established.
      * @return boolean whether the DB connection is established
@@ -78,7 +79,7 @@ class Connection extends \yii\redis\Connection
      */
     public function executeCommand($name, $params = [], $reconnect = 0)
     {
-        if (in_array($name,self::NotSupportCMD)){
+        if (in_array($name, self::NotSupportCMD)) {
             throw new Exception("Swoole Coroutine Redis does no support Redis command : " . $name);
         }
         $this->open();
@@ -123,9 +124,12 @@ class Connection extends \yii\redis\Connection
                 'port' => $this->port,
                 'database' => $this->database,
                 'connect_timeout' => $this->connectionTimeout ? $this->connectionTimeout : ini_get('default_socket_timeout'),
-                'timeout' => $this->dataTimeout ? $this->dataTimeout : -1,//-1 is swoole default
+//                'timeout' => $this->dataTimeout ? $this->dataTimeout : -1,//-1 is swoole default
                 'password' => $this->password,
             ];
+            if ($this->dataTimeout) {
+                $config['timeout'] = $this->dataTimeout;
+            }
 
             $pc = $cm->poolConfig['redis'] ?? [];
             $dbPool = new DbPool($pc);
